@@ -22,7 +22,7 @@ class Spotify_Auth:
             self.token = token_raw["access_token"]
 
 
-    def get(self, url, params):
+    def get(self, url, params=None):
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
