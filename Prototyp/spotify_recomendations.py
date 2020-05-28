@@ -1,38 +1,19 @@
 import requests
-import json
 import time
+import json
 import matplotlib.pyplot as plt
+from spotify_auth import Spotify_Auth
 
-with open("secrets.json","r") as file:
-    secrets = json.load(file)
+auth = Spotify_Auth()
 
-CLIENT_ID = secrets["CLIENT_ID"]
-CLIENT_SECRET = secrets["CLIENT_SECRET"]
-
-grant_type = 'client_credentials'
-body_params = {'grant_type': grant_type}
-
-url = 'https://accounts.spotify.com/api/token'
-response = requests.post(url, data=body_params,
-                         auth=(CLIENT_ID, CLIENT_SECRET))
-
-token_raw = json.loads(response.text)
-token = token_raw["access_token"]
-
-headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    "Authorization": "Bearer {}".format(token),
+params = {
+    "limit":1,
+    "seed_genres": "charts,pop,hits,new",
+    "min_acousticness":0.5
 }
 
-params = (
-    ('limit', '1'),
-    ('seed_genres', 'charts,pop,hits,new'),
-    ('min_acousticness', '0.5'),
-)
-
-response = requests.get(
-    'https://api.spotify.com/v1/recommendations', headers=headers, params=params)
+response = auth.get(
+    'https://api.spotify.com/v1/recommendations', params=params)
 
 result = json.loads(response.content)
 track = result["tracks"][0]
@@ -40,7 +21,8 @@ id = track["id"]
 name = track["name"]+" from "+track["artists"][0]["name"]
 print(name)
 
-response = requests.get("https://api.spotify.com/v1/audio-analysis/"+id,headers=headers)
+
+response = auth.get("https://api.spotify.com/v1/audio-analysis/"+id)
 result = json.loads(response.content)
 
 sections = result["sections"]
@@ -82,7 +64,7 @@ plt.show()
 
 
 
-"""
+
 start = list()
 loudness = list()
 tempo = list()
@@ -108,7 +90,7 @@ plt.title(name)
 plt.legend()
 plt.show()
 
-"""
+
 
 
 
