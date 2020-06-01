@@ -1,4 +1,3 @@
-import requests
 import time
 import json
 import matplotlib.pyplot as plt
