@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+    testing:
+        build: ./prototyp
+        volumes: 
+            - ./prototyp:/usr/src/app/
