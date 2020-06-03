@@ -1,8 +1,27 @@
-from pykafka import KafkaClient
+from kafka import KafkaProducer
+import json
+import random
 
-client = KafkaClient("localhost:9092")
-topic = client.topics["songids"]
+producer = KafkaProducer(bootstrap_servers='localhost:9092',
+                         value_serializer=lambda x: json.dumps(x).encode("ascii"))
 
-for i in range(10):
-    producer = topic.get_sync_producer()
-    producer.produce("Hello".encode("ascii"))
+for i in range(50):
+
+    person = {
+        "name": "felix"+str(i),
+        "surname": "boss"+str(i)
+    }
+
+    producer.send("mytopic",value=person)
+    producer.flush()
+
+
+for i in range(50):
+
+    person = {
+        "name": "david"+str(i),
+        "surname": "boy"+str(i)
+    }
+
+    producer.send("othertopic", value=person)
+    producer.flush()
