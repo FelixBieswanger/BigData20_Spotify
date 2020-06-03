@@ -65,8 +65,7 @@ services:
         NEO4J_kafka_value_deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
         NEO4J_streams_source_enabled: "false"
         NEO4J_streams_sink_enabled_to_dbtest: "true"
-        NEO4J_streams_sink_topic_cypher_mytopic_to_dbtest: "CREATE (n:Person {name: event.name, surname: event.surname}) RETURN n"
-        NEO4J_streams_sink_topic_cypher_othertopic_to_dbtest: "CREATE (n:Person {name: event.name, surname: event.surname}) RETURN n"
-
+        NEO4J_streams_sink_topic_cypher_createTrack_to_dbtest: "CREATE (t:Track {id: event.id, name: event.name , duration_ms: event.duration_ms, explicit:event.explicit})"
+        NEO4J_streams_sink_topic_cypher_createArtist_to_dbtest: "MATCH (t:Track {id:event.trackid}) CREATE (a:Artist {id: event.id, name: event.name}) CREATE (a)-[:produced]->(t)"
 
     
