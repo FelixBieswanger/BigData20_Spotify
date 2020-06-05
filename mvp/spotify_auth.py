@@ -5,7 +5,7 @@ import requests
 class Spotify_Auth:
     def __init__(self):
 
-        with open("secrets.json", "r") as file:
+        with open("/Users/felixbieswanger/Desktop/Uni_Stuff/Semester_7/BigData/BigData20_Spotify/mvp/secrets.json", "r") as file:
             secrets = json.load(file)
 
             CLIENT_ID = secrets["CLIENT_ID"]

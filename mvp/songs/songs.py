@@ -8,8 +8,6 @@ auth = Spotify_Auth()
 
 producer = KafkaProducer(bootstrap_servers='localhost:9092', value_serializer=lambda x: json.dumps(x).encode("ascii"))
 
-
-
 """
 SEED GENRES
 
@@ -36,24 +34,16 @@ response_recomendations = json.loads(auth.get(
     "https://api.spotify.com/v1/recommendations", params=recommendations_seach_settings).content)
 
 for recoomandation in response_recomendations["tracks"]:
+
     track = {
         "id":recoomandation["id"],
         "name": recoomandation["name"],
         "duration_ms": recoomandation["duration_ms"],
-        "explicit": recoomandation["explicit"]
+        "explicit": recoomandation["explicit"],
+        "artists": ",".join([n["id"] for n in recoomandation["artists"]])
     }
 
     producer.send("createTrack", value=track)
-
-
-    for artist in recoomandation["artists"]:
-        artist = {
-            "id": artist["id"],
-            "name":artist["name"],
-            "trackid": track["id"]
-        }
-
-        producer.send("createArtist", value=artist)
 producer.flush()
     
 
