@@ -1,10 +1,16 @@
+#appending parent directory
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from kafka import KafkaProducer
 import json
 import random
-from spotify_auth import Spotify_Auth
+from resources.spotify_auth import Spotify_Auth
 
 
 auth = Spotify_Auth()
+
 
 producer = KafkaProducer(bootstrap_servers='localhost:9092', value_serializer=lambda x: json.dumps(x).encode("ascii"))
 

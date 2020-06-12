@@ -79,9 +79,9 @@ services:
       - kafka_cluster
     build: 
       context: ./mvp
-      dockerfile: ./artists/Dockerfile
+      dockerfile: Dockerfile_artists
     volumes: 
-      - ./mvp/artists:/usr/src/app
+      - ./artists:/usr/src/app
     container_name: create_artists
     depends_on:
       - neo4j
@@ -91,10 +91,9 @@ services:
       - kafka_cluster
     build:
       context: ./mvp
-      dockerfile: ./songs/Dockerfile
+      dockerfile: Dockerfile_songs
     volumes: 
       - ./mvp/songs:/usr/src/app
     container_name: create_songs
     depends_on:
       - create_artists
-    

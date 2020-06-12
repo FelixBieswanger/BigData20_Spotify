@@ -1,0 +1,13 @@
+FROM python:3-onbuild
+ADD ./songs/ /usr/src/app
+ADD ./resources/ /usr/src/app
+
+#directory structure
+#usr/src/app
+#   artists/
+#       songs.py
+#   resources/
+#       spotify_auth.py
+#       secrets.json
+
+CMD [ "python","./songs/songs.py" ]
