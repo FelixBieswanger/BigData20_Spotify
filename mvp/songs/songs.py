@@ -3,16 +3,16 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from kafka import KafkaProducer
 import json
 import random
 from resources.spotify_auth import Spotify_Auth
-
+from resources.kafka_factory import Kafka_factory
 
 auth = Spotify_Auth()
+kafka_factory = Kafka_factory()
 
 
-producer = KafkaProducer(bootstrap_servers='localhost:9092', value_serializer=lambda x: json.dumps(x).encode("ascii"))
+producer = kafka_factory.get_util("producer")
 
 """
 SEED GENRES

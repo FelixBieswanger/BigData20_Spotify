@@ -3,22 +3,18 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-from kafka import KafkaConsumer, KafkaProducer
 import json
 from resources.spotify_auth import Spotify_Auth
+from resources.kafka_factory import Kafka_factory
 import time
 
 
 auth = Spotify_Auth()
+kafka_factory = Kafka_factory()
 
-consumer = KafkaConsumer("dbtest", \
-    bootstrap_servers="localhost:9092", \
-    value_deserializer=lambda x: json.loads(x.decode('utf-8')), \
-    auto_offset_reset="latest")
 
-producer = KafkaProducer(bootstrap_servers='localhost:9092', \
-    value_serializer=lambda x: json.dumps(x).encode("ascii"))
+consumer = kafka_factory.get_util("consumer")
+producer = kafka_factory.get_util("producer")
 
 
 def do_nice_stuff(track_art_map,artist_store):

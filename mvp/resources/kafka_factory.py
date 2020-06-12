@@ -2,7 +2,7 @@ from kafka import KafkaConsumer, KafkaProducer
 import time
 
 class Kafka_factory:
-    def get_kafka_util(self,util):
+    def get_util(self,util):
         if util == "consumer":
             consumer = None
             retrys = 0
