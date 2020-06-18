@@ -3,10 +3,13 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import json
-import random
-from resources.spotify_auth import Spotify_Auth
 from resources.kafka_factory import Kafka_factory
+from resources.spotify_auth import Spotify_Auth
+import json
+import time
+
+
+import random
 
 auth = Spotify_Auth()
 kafka_factory = Kafka_factory()
@@ -50,6 +53,8 @@ for recoomandation in response_recomendations["tracks"]:
     }
 
     producer.send("createTrack", value=track)
+    print(songs)
 producer.flush()
+
     
 
