@@ -42,18 +42,39 @@ recommendations_seach_settings = {
 response_recomendations = json.loads(auth.get(
     "https://api.spotify.com/v1/recommendations", params=recommendations_seach_settings).content)
 
+
+tracks = {}
 for recoomandation in response_recomendations["tracks"]:
 
-    track = {
-        "id":recoomandation["id"],
+    tracks[recoomandation["id"]] = {
         "name": recoomandation["name"],
         "duration_ms": recoomandation["duration_ms"],
         "explicit": recoomandation["explicit"],
         "artists": ",".join([n["id"] for n in recoomandation["artists"]])
     }
 
+track_ids_string = ",".join(tracks.keys())
+
+response_audioanalysis = json.loads(auth.get(
+    "https://api.spotify.com/v1/audio-features?ids="+track_ids_string).content)
+
+for analysis in response_audioanalysis["audio_features"]:
+
+    track = tracks[analysis["id"]]
+    track["danceability"] = analysis["danceability"]
+    track["energy"] = analysis["energy"]
+    track["key"] = analysis["key"]
+    track["loudness"] = analysis["loudness"]
+    track["mode"] = analysis["mode"]
+    track["speechiness"] = analysis["speechiness"]
+    track["acousticness"] = analysis["acousticness"]
+    track["instrumentalness"] = analysis["instrumentalness"]
+    track["liveness"] = analysis["liveness"]
+    track["valence"] = analysis["valence"]
+    track["tempo"] = analysis["tempo"]
+    track["time_signature"] = analysis["time_signature"]
+
     producer.send("createTrack", value=track)
     producer.flush()
-
     
 
