@@ -21,7 +21,7 @@ class Kafka_factory:
                 consumer = KafkaConsumer("dbtest",\
                     bootstrap_servers=self.kafka_address,\
                     value_deserializer=lambda x: json.loads(x.decode('utf-8')),\
-                    auto_offset_reset="earliest")
+                    auto_offset_reset="latest")
 
                 #is graphdatabase running?
                 graph = Graph(self.neo4j_adress,
