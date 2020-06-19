@@ -15,7 +15,7 @@ auth = Spotify_Auth()
 kafka_factory = Kafka_factory()
 
 
-producer = kafka_factory.get_util("producer")
+producer = kafka_factory.get_producer()
 
 """
 SEED GENRES
@@ -53,8 +53,7 @@ for recoomandation in response_recomendations["tracks"]:
     }
 
     producer.send("createTrack", value=track)
-    print(songs)
-producer.flush()
+    producer.flush()
 
     
 

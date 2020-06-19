@@ -6,19 +6,23 @@ from resources.spotify_auth import Spotify_Auth
 from resources.kafka_factory import Kafka_factory
 import json
 from datetime import datetime
-
+from threading import Timer
 
 auth = Spotify_Auth()
 kafka_factory = Kafka_factory()
 
+consumer = kafka_factory.get_consumer()
+producer = kafka_factory.get_producer()
 
-consumer = kafka_factory.get_util("consumer")
-producer = kafka_factory.get_util("producer")
+track_art_map = dict()
+artist_store = list()
+block = False
 
-last_send = datetime.now()
+def do_nice_stuff():
 
+    global track_art_map,artist_store,block
 
-def do_nice_stuff(track_art_map,artist_store):
+    Timer(15, do_nice_stuff).start()
 
     if len(artist_store) > 0:
         artists_string = ",".join(artist_store)
@@ -42,21 +46,26 @@ def do_nice_stuff(track_art_map,artist_store):
                         "trackid":trackid
                     }
                     producer.send("createArtistandRel", value=message)
-            producer.flush()
+                    producer.flush()
 
+            if block == False:
+                track_art_map = dict()
+                artist_store = list()
+
+            
         elif response.status_code == 429:
             print("Too Many Requests, RATE LIMIT")
         else:
             print(response.status_code,"Error",response.content)
 
-track_art_map = dict()
-artist_store = list()
+Timer(15, do_nice_stuff).start()
 
 for message in consumer:
     message = message.value
     if message["meta"]["operation"] == "created":
         if message["payload"]["type"] == "node":
             if "Track" in message["payload"]["after"]["labels"]:
+                block = True
                 message_values = message["payload"]["after"]["properties"]
 
                 artists = message_values["artists"].split(",")
@@ -70,13 +79,11 @@ for message in consumer:
                     if trackid not in track_art_map[artistid]:
                         track_art_map[artistid].append(trackid)
 
-                diff = datetime.now() - last_send
-                if len(artist_store) > 45 or diff.seconds == 20:
-                    do_nice_stuff(track_art_map.copy(),artist_store.copy())
-                    track_art_map = dict()
-                    artist_store = list()
-
-do_nice_stuff(track_art_map.copy(), artist_store.copy())
+                block = False
+                if len(artist_store) > 45:
+                    do_nice_stuff()
+                
+                
 
 
 
