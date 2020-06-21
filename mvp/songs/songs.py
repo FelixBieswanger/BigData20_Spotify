@@ -61,20 +61,29 @@ response_audioanalysis = json.loads(auth.get(
 for analysis in response_audioanalysis["audio_features"]:
 
     track = tracks[analysis["id"]]
-    track["danceability"] = analysis["danceability"]
-    track["energy"] = analysis["energy"]
-    track["key"] = analysis["key"]
-    track["loudness"] = analysis["loudness"]
-    track["mode"] = analysis["mode"]
-    track["speechiness"] = analysis["speechiness"]
-    track["acousticness"] = analysis["acousticness"]
-    track["instrumentalness"] = analysis["instrumentalness"]
-    track["liveness"] = analysis["liveness"]
-    track["valence"] = analysis["valence"]
-    track["tempo"] = analysis["tempo"]
-    track["time_signature"] = analysis["time_signature"]
+    track["id"] = analysis["id"]
+
+    analysis_store = {
+        "danceability": analysis["danceability"],
+        "energy": analysis["energy"],
+        "key" : analysis["key"],
+        "loudness" : analysis["loudness"],
+        "mode" : analysis["mode"],
+        "speechiness" : analysis["speechiness"],
+        "acousticness" : analysis["acousticness"],
+        "instrumentalness" : analysis["instrumentalness"],
+        "liveness" : analysis["liveness"],
+        "valence" : analysis["valence"],
+        "tempo" : analysis["tempo"],
+        "time_signature" : analysis["time_signature"]
+    }
+
+    for name in analysis_store.keys():
+        if analysis_store[name] == None:
+            analysis_store[name] = "nA"
+
+        track[name] = analysis_store[name]
 
     producer.send("createTrack", value=track)
     producer.flush()
-    
 
