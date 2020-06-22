@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from resources.kafka_factory import Kafka_factory
 from resources.spotify_auth import Spotify_Auth
+from kafka import KafkaProducer
 import json
 import time
 
@@ -12,10 +13,13 @@ import time
 import random
 
 auth = Spotify_Auth()
-kafka_factory = Kafka_factory()
+#kafka_factory = Kafka_factory()
+#producer = kafka_factory.get_producer()
 
-
-producer = kafka_factory.get_producer()
+try:
+    producer = KafkaProducer(bootstrap_servers="kafka:9092", value_serializer=lambda x: json.dumps(x).encode("ascii"))
+except Exception as e:
+    print(e)
 
 """
 SEED GENRES
@@ -84,6 +88,10 @@ for analysis in response_audioanalysis["audio_features"]:
 
         track[name] = analysis_store[name]
 
-    producer.send("createTrack", value=track)
-    producer.flush()
+    try:
+        producer.send("createTrack", value=track)
+        producer.flush()
+        print("sent")
+    except Exception as e:
+        print(e)
 

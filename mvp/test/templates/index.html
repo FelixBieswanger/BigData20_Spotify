@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+</head>
+<body>
+    <h1>Test Song in route /song</h1>
+    <div id="results"></div>
+
+    <script>
+        var source = new EventSource("/songs");
+
+        source.addEventListener("message", function (e) {
+            message = JSON.parse(e.data);
+            var tag = document.createElement('p');
+            tag.innerHTML = JSON.stringify(message);
+            document.getElementById('results').appendChild(tag);
+        });
+
+    </script>
+</body>
+</html>

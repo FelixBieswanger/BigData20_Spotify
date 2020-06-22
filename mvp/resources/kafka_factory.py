@@ -6,8 +6,6 @@ from py2neo import Graph
 class Kafka_factory:
 
     def __init__(self):
-        localhost = "10.60.48.21"
-
         self.kafka_address = localhost+":9092"
         self.neo4j_adress = "bolt://"+localhost+":7687/db/data"
 
@@ -42,7 +40,7 @@ class Kafka_factory:
 
     def get_producer(self):
         producer = None
-        graph = None
+        graph = 1
         retrys = 0
         while (producer == None or graph == None) and retrys < 2:
             try:
@@ -53,9 +51,9 @@ class Kafka_factory:
                 producer.flush()
 
                 #is graphdatabase running?
-                graph = Graph(self.neo4j_adress,
-                                auth=("neo4j", "password"))
-                graph.run("Match () Return 1 Limit 1")
+                #graph = Graph(self.neo4j_adress,
+                #                auth=("neo4j", "password"))
+                #graph.run("Match () Return 1 Limit 1")
             except Exception as e:
                 retrys += 1
                 graph = None

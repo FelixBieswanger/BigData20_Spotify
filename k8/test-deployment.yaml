@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: test
+  name: test
+spec:
+  #replicas: Autoscale
+  selector:
+    matchLabels:
+      io.kompose.service: test
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/kafka_cluster: "true"
+        io.kompose.service: test
+    spec:
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+      containers:
+      - name: test
+        image: spotifycontainerregistery.azurecr.io/test
+        imagePullPolicy: ""
+        ports:
+        - containerPort: 6969
+
+status: {}
