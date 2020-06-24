@@ -37,9 +37,17 @@
             <button onclick="pause()">Pause</button>
             <button onclick="resume()">Resume</button>
         </div>
-        <div id="parameter">parameter1<br>
-            parameter2<br>
-            parameter3<br>
+        <div id="parameter">Loudness<br>
+            <div id="slidecontainer">
+                <input type="range" min="1" max="5" value="3" class="slider" id="Loudness"> <br>
+                Danceability<br>
+                <input type="range" min="1" max="5" value="3" class="slider" id="Danceability"><br>
+                ...<br>
+                <input type="range" min="1" max="5" value="3" class="slider" id="...">
+                <button onclick="save()">Save</button>
+
+                <button onclick="reset()">Reset</button>
+        </div>
         </div>
     </div>
     <div id="footer">
