@@ -1,0 +1,36 @@
+
+#contents {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 100%;
+}
+
+#contents > * {
+    margin: 15px;
+}
+
+#header {
+    text-align: center;
+    align-content: center;
+}
+
+#footer {
+    text-align: center;
+    align-content: center;
+    position: fixed;
+    left: 0;
+    bottom 0;
+    width: 100%;
+    background-color: azure;
+}
+
+#search {
+    float: left;
+}
+
+#parameter {
+    text-align: center;
+    float: right;
+}

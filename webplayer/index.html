@@ -1,22 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>spotify live dj session test</title>
+    <title>spotify live dj session test</title>
   
-  <script src="https://sdk.scdn.co/spotify-player.js"></script>
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
-  
-  <script src="script.js"></script>
-
-<body class="container">
-    <center>
-        <h1 class="text-salmon">hallo ja hier ist text</h1>
-		<img id="current-track"/> <br /> <br />
-		<b>Now playing:</b> <br/>
-        <span id="current-track-artist"></span>
-		<span id="current-track-name"></span>
-        <input id="songname" type ="text">
-        <button onclick="play()">Play</button>
-	</center>
-  </body>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
+    <script src="script.js"></script>
+    <link rel="stylesheet" href ="style.css">
+</head>
+<body>  
+    <div id="header">
+        <h1>Spotify Live DJ Session</h1>
+    </div>
+    <div id="contents">
+        <div id="search">
+            <h4>Suche:</h4>
+            <input id="searchbox" type="text">
+            <button onclick="search()">Gogo</button><br>
+            <span id="search-res-0"></span><br>
+            <span id="search-res-1"></span><br>
+            <span id="search-res-2"></span><br>
+            <span id="search-res-3"></span><br>
+            <span id="search-res-4"></span><br>
+            <span id="search-res-5"></span><br>
+            <span id="search-res-6"></span><br>
+            <span id="search-res-7"></span>
+        </div>
+        <div id="webplayer">
+            <img id="current-track"/> <br /> <br />
+            <b>Now playing:</b> <br/>
+            <span id="current-track-artist"></span>
+            <span id="current-track-artist2"></span>
+            <span id="current-track-name"></span>
+            <input id="songname" type ="text">
+            <button onclick="play()">Play</button>
+            <button onclick="pause()">Pause</button>
+            <button onclick="resume()">Resume</button>
+        </div>
+        <div id="parameter">parameter1<br>
+            parameter2<br>
+            parameter3<br>
+        </div>
+    </div>
+    <div id="footer">
+        <p>FAQ, Credits, bla</p>
+    </div>
+</body>
 </html>

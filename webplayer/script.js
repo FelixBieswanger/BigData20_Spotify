@@ -20,9 +20,10 @@
 	const clientId = '37e56ecffd2e4712a07bfcf7ac4ec508'; //DashboardID
 	const redirectUri = 'http://localhost/spotifybigdata/index.html'; //Whitelisted in Dashbaord
 	const scopes = [
-	  'streaming',
-	  'user-read-email',
-	  'user-read-private'
+        'streaming',
+        'user-read-email',
+        'user-read-private',
+        'user-modify-playback-state'
 	];
 
 	// If there is no token, redirect to Spotify authorization
@@ -31,6 +32,8 @@
 	}
 
     var id = '';
+    var currentSong;
+    var searchResult; 
 	// Set up the Web Playback SDK
 
 	window.onSpotifyPlayerAPIReady = () => {
@@ -53,20 +56,20 @@
 		$('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
 		$('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
         $('#current-track-artist').text(state.track_window.current_track.artists[0].name);
+        $('#current-track-artist2').text(state.track_window.current_track.artists[1].name);
 	   });
 
 	  // Ready
     player.on('ready', data => {
         console.log('Ready with Device ID', data.device_id);
-		id = data.device_id;
-		// Play a track using our new device ID
-        
+		id = data.device_id;	
 	   });
     
 	  // Connect to the player!
     player.connect();
 	   }
-    // HTTP Request to start whichever song uri is currently pasted into the textbox!
+
+    // Play a track using our new device ID
 	function play() {
         var uri = $('#songname').val();
 		$.ajax({
@@ -79,3 +82,81 @@
 			}
 		});
 	}
+
+    function pause() {
+        $.ajax({
+            url: 'https://api.spotify.com/v1/me/player/pause?device_id=' + id,
+            type: 'PUT',
+            beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+ _token );},
+            success: function(data) {
+                console.log(data)
+            }
+        });
+    }
+
+    function resume(){
+        $.ajax({
+            url: 'https://api.spotify.com/v1/me/player/play?device_id=' + id,
+            type: 'PUT',
+            beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+			success: function(data) { 
+				console.log(data)
+			}
+        });
+    }
+    
+    function search(){
+        var searchcontext = $('#searchbox').val();
+        console.log(searchcontext)
+        
+        //const myData = {
+        //    q: searchcontext,
+        //    type: "track"
+        //}
+        
+        /**$.ajax({
+            url: 'https://api.spotify.com/v1/search?q=' + searchcontext + '&type=track',
+            type: 'GET',
+            //data: JSON.stringify(myData),
+            beforeSend: function(xhr){
+                xhr.setRequestHeader('Accept', 'application/json')
+                xhr.setRequestHeader('Content-Type', 'application/json')
+                xhr.setRequestHeader('Authorization', 'Bearer ' + _token)
+            },
+            success: function(data) {
+                console.log(data)
+            }
+        })
+        
+        /**$.get('https://api.spotify.com/v1/search?q=' + searchcontext + '&type=track', { beforeSend: function(xhr){
+            xhr.setRequestHeader('Authorization', 'Bearer ' + _token ); }
+        })**/
+        
+        fetch(
+            'https://cors-anywhere.herokuapp.com/api.spotify.com/v1/search?q=' + searchcontext + '&type=track&market=de',
+            {
+                headers: {
+                    Authorization: 'Bearer ' + _token,
+                }       
+            } 
+        )
+        .then(result => result.json()).then(result => 
+            displayResults(result)
+        )
+        
+    }
+    
+    //hier schleifendurchläufe an ergebnisse anpassen. beim api call evtl ergebnisse limitieren.
+    function displayResults(result){
+        var span = '#search-res-'
+        console.log(result)
+        for(j = 0; j <= result.tracks.items.length-1; j++) {
+            $(span.concat(j)).text(result.tracks.items[j].name + ' - ' + result.tracks.items[j].artists[0].name);
+        }
+    }
+
+    function searchResultClickable(result){
+        for(k = 0; k <= result.tracks.items.length; k++){
+            
+            }
+        }
