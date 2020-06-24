@@ -17,9 +17,16 @@ spec:
   - name: "6477"
     port: 6477
     targetPort: 6477
-  - name: "7687"
+  - name: "bolt"
     port: 7687
     targetPort: 7687
+  - name: "kafka"
+    port: 9092
+    targetPort: 9092
+  - name: "zookeeper"
+    port: 2181
+    targetPort: 2181
+
   selector:
     io.kompose.service: neo4j
 status:
