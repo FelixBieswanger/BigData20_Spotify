@@ -13,13 +13,8 @@ import time
 import random
 
 auth = Spotify_Auth()
-#kafka_factory = Kafka_factory()
-#producer = kafka_factory.get_producer()
-
-try:
-    producer = KafkaProducer(bootstrap_servers="kafka:9092", value_serializer=lambda x: json.dumps(x).encode("ascii"))
-except Exception as e:
-    print(e)
+kafka_factory = Kafka_factory()
+producer = kafka_factory.get_producer()
 
 """
 SEED GENRES

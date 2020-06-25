@@ -52,7 +52,19 @@ spec:
         - name: NEO4J_streams_source_enabled
           value: "true"
         - name: NEO4J_streams_source_topic_nodes_neo4j
-          value: Node{*}
+          value: Track:Artist:Genre
+        - name: NEO4J_streams_sink_enabled_to_neo4j
+          value: "true"
+        - name: NEO4J_kafka_group_id
+          value: "neo4j"
+        - name: NEO4J_kafka_client_id 
+          value: "neo4j"
+        - name: NEO4J_streams_sink_topic_cypher_createArtistandRel_to_neo4j
+          value: "MATCH(t:Track {id: event.trackid}) MERGE (a:Artist {id: event.id, name: event.name, popularity:event.popularity, followers:event.followers, genres:event.genres}) MERGE (a)-[:produced]->(t)"
+        - name: NEO4J_streams_sink_topic_cypher_createGenre_to_neo4j
+          value: "MATCH (a:Artist {id:event.artistid}) MERGE (g:Genre {name:event.name})MERGE (a)-[:belongs_to]->(g)"
+        - name: NEO4J_streams_sink_topic_cypher_createTrack_to_neo4j
+          value: "MERGE (t:Track {id: event.id, name: event.name , duration_ms: event.duration_ms, explicit:event.explicit, artists:event.artists, danceability:event.danceability, energy:event.energy, key: event.key, loudness: event.loudness, mode: event.mode, speechiness: event.speechiness, acousticness: event.acousticness, instrumentalness: event.instrumentalness, liveness: event.liveness, valence: event.valence, tempo: event.tempo, time_signature: event.time_signature})"
         image: spotifycontainerregistery.azurecr.io/neo4j
         imagePullPolicy: ""
         ports:

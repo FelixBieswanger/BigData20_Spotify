@@ -8,8 +8,6 @@ import json
 from resources.kafka_factory import Kafka_factory
 from resources.spotify_auth import Spotify_Auth
 
-
-
 auth = Spotify_Auth()
 kafka_factory = Kafka_factory()
 

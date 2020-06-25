@@ -24,7 +24,7 @@ def songs():
     #Using Yield create an Generator
     def events():
         for message in consumer:
-            yield 'data:{0}\n\n'.format(message)
+            yield 'data:{0}\n\n'.format(message.value)
 
     #Mimetype: Event-Stream takes an Generator
     return Response(events(), mimetype="text/event-stream")
@@ -37,7 +37,7 @@ def neo4jtest():
     #Using Yield create an Generator
     def events():
         for message in consumer:
-            yield 'data:{0}\n\n'.format(message)
+            yield 'data:{0}\n\n'.format(message.value)
 
     #Mimetype: Event-Stream takes an Generator
     return Response(events(), mimetype="text/event-stream")
