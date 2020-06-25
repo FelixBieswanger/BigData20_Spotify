@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: genres
+  name: genres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: genres
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/kafka_cluster: "true"
+        io.kompose.service: genres
+    spec:
+      containers:
+      - image: spotifycontainerregistery.azurecr.io/genre
+        imagePullPolicy: ""
+        name: genres
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

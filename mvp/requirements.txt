@@ -1,4 +1,5 @@
-neo4j==1.7.6
-pykafka==2.8.0
+kafka_python==2.0.1
+py2neo==4.3.0
 matplotlib==3.2.1
-requests==2.19.1
+requests 
+

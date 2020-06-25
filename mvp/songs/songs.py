@@ -1,12 +1,20 @@
+#appending parent directory
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from resources.kafka_factory import Kafka_factory
+from resources.spotify_auth import Spotify_Auth
 from kafka import KafkaProducer
 import json
-import random
-from spotify_auth import Spotify_Auth
+import time
 
+
+import random
 
 auth = Spotify_Auth()
-
-producer = KafkaProducer(bootstrap_servers='localhost:9092', value_serializer=lambda x: json.dumps(x).encode("ascii"))
+kafka_factory = Kafka_factory()
+producer = kafka_factory.get_producer()
 
 """
 SEED GENRES
@@ -33,17 +41,52 @@ recommendations_seach_settings = {
 response_recomendations = json.loads(auth.get(
     "https://api.spotify.com/v1/recommendations", params=recommendations_seach_settings).content)
 
+
+tracks = {}
 for recoomandation in response_recomendations["tracks"]:
 
-    track = {
-        "id":recoomandation["id"],
+    tracks[recoomandation["id"]] = {
         "name": recoomandation["name"],
         "duration_ms": recoomandation["duration_ms"],
         "explicit": recoomandation["explicit"],
         "artists": ",".join([n["id"] for n in recoomandation["artists"]])
     }
 
-    producer.send("createTrack", value=track)
-producer.flush()
-    
+track_ids_string = ",".join(tracks.keys())
+
+response_audioanalysis = json.loads(auth.get(
+    "https://api.spotify.com/v1/audio-features?ids="+track_ids_string).content)
+
+for analysis in response_audioanalysis["audio_features"]:
+
+    track = tracks[analysis["id"]]
+    track["id"] = analysis["id"]
+
+    analysis_store = {
+        "danceability": analysis["danceability"],
+        "energy": analysis["energy"],
+        "key" : analysis["key"],
+        "loudness" : analysis["loudness"],
+        "mode" : analysis["mode"],
+        "speechiness" : analysis["speechiness"],
+        "acousticness" : analysis["acousticness"],
+        "instrumentalness" : analysis["instrumentalness"],
+        "liveness" : analysis["liveness"],
+        "valence" : analysis["valence"],
+        "tempo" : analysis["tempo"],
+        "time_signature" : analysis["time_signature"]
+    }
+
+    for name in analysis_store.keys():
+        if analysis_store[name] == None:
+            analysis_store[name] = "nA"
+
+        track[name] = analysis_store[name]
+
+    try:
+        producer.send("createTrack", value=track)
+        producer.flush()
+        print("sent")
+    except Exception as e:
+        print(e)
 
