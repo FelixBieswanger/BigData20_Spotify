@@ -1,4 +1,6 @@
-	// Get the hash of the url
+	var isPlaying = false;
+    var songPaused = false;
+    // Get the hash of the url
 	const hash = window.location.hash
 	.substring(1)
 	.split('&')
@@ -67,11 +69,47 @@
     
 	  // Connect to the player!
     player.connect();
-	   }
+    }
+    
+    var slider = document.getElementById("myRange");
+    var output = document.getElementById("demo");
+    output.innerHTML = slider.value; // Display the default slider value
 
+    // Update the current slider value (each time you drag the slider handle)
+    slider.oninput = function() {
+    output.innerHTML = this.value;
+    }
+
+    function save(save){
+
+    }
+
+    function reset(){
+       index.getElementById('Loudness').value = 3;
+       index.getElementById('Danceability').value = 3;
+       index.getElementById('...').value = 3;
+
+
+    };
+    
+    function songHandler(){
+        if(isPlaying){
+            pause();
+            isPlaying = false;
+            songPaused = true;
+        } else if(!isPlaying && !songPaused){
+            play();
+            isPlaying = true;
+        } else {
+            resume();
+            isPlaying = true;
+            songPaused = false;
+        }
+    }
+    
     // Play a track using our new device ID
 	function play() {
-        var uri = $('#songname').val();
+        var uri = 'spotify:track:0ed6evAMZvewGh4UI9KkVU", "spotify:track:0I67c6jPoBxVkUwo02bZnD';
 		$.ajax({
 			url: "https://api.spotify.com/v1/me/player/play?device_id=" + id,
 			type: "PUT",
@@ -103,6 +141,28 @@
 				console.log(data)
 			}
         });
+    }
+
+    function previous(){
+        $.ajax({
+            url: 'https://api.spotify.com/v1/me/player/previous',
+            type: 'POST',
+            beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+			success: function(data) {
+				console.log(data)
+			}
+        });
+    }
+
+    function skip(){
+        $.ajax({
+            url: 'https://api.spotify.com/v1/me/player/next',
+            type: 'POST',
+            beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+                success: function(data) {
+                    console.log(data)
+                }
+            });
     }
     
     function search(){
@@ -137,8 +197,8 @@
             {
                 headers: {
                     Authorization: 'Bearer ' + _token,
-                }       
-            } 
+                }
+            }
         )
         .then(result => result.json()).then(result => 
             displayResults(result)
@@ -155,30 +215,7 @@
         }
     }
 
-    function searchResultClickable(result){
-        for(k = 0; k <= result.tracks.items.length; k++){
-            
-            }
-        }
-
-    var slider = document.getElementById("myRange");
-var output = document.getElementById("demo");
-output.innerHTML = slider.value; // Display the default slider value
-
-// Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
-  output.innerHTML = this.value;
-}
-
-    function save(save){
-
-
+    function changeIcon(){
+        $(".playpause").toggleClass("fa-pause-circle")
+        $(".playpause").toggleClass("fa-play-circle")
     }
-
-    function reset(){
-       index.getElementById('Loudness').value = 3;
-       index.getElementById('Danceability').value = 3;
-       index.getElementById('...').value = 3;
-
-
-    };
