@@ -7,17 +7,32 @@ Created on Mon Jun 22 14:51:50 2020
 """
 
 
+'''
+Import verwendeter Bibliotheken
+''' 
+
+import pandas as pd
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType
-import pandas as pd
 from pyspark.sql.functions import lit
 from pyspark.ml.linalg import VectorUDT, DenseVector
 import pyspark.sql
+from pyspark.sql import SQLContext
+import math
+import pyspark.mllib.linalg    
+from pyspark.sql.functions import udf
+from pyspark.sql.types import FloatType
+import pyspark.sql.functions as F
+from scipy.spatial import distance
+from neo4j import GraphDatabase
 
 
 
+'''
+Anlegen des Spark Projektes
+''' 
 
 sc = SparkContext("local[2]", "EuclideanDistanceOnSteroids") #1.Spark, Mesos, YARN URL or local, 2. appName-Parametr
 ssc = StreamingContext(sc, 10) #Spark-Context-Object, Interval 10 seconds
@@ -26,25 +41,20 @@ spark= SparkSession(sc)
 
 
 
+
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 
-
-
-
-
-from neo4j import GraphDatabase
+'''
+Input: Initiales Laden der Tracks und zugehörigen Features aus Neo4J
+''' 
 
 uri = "bolt://40.119.32.25:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
 
 Track_Feature_Query= "MATCH (n:Track) RETURN n"
-
-# Track_Feature_Query= """CALL apoc.export.json.query(
-#                         "MATCH (n:Track) RETURN n",
-#                         "users-age.json")""" 
 
 with driver.session() as session:
     nodes = session.run(Track_Feature_Query)
@@ -58,159 +68,18 @@ track_list= [list(track.values())[0] for track in track_list]
 
 data= pd.DataFrame.from_dict(track_list)
 
-driver.close()
+sqlCtx = SQLContext(sc)
+data = sqlCtx.createDataFrame(data)
+            
 
-current_song_ID= '04DwTuZ2VBdJCCC5TROn7L'
-
-
-
-
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-
-
-
-
-'''
-Input: Neo4J Output as Structured Streaming
-''' 
-userSchema_features = StructType().add("loudness", "double") \
-                        .add("liveness", "double") \
-                        .add("tempo", "double") \
-                        .add("valence", "double") \
-                        .add("instrumentalness", "double") \
-                        .add("danceability", "double") \
-                        .add("speechiness", "double") \
-                        .add("mode", "double") \
-                        .add("duration_ms", "double") \
-                        .add("explicit", "boolean") \
-                        .add("artists", "string") \
-                        .add("acousticness", "double") \
-                        .add("name", "string") \
-                        .add("id", "string") \
-                        .add("key", "double") \
-                        .add("time_signature", "double") \
-                        .add("energy", "double") 
-                        
-data_features= spark \
-        .readStream \
-        .option("sep", ",") \
-        .option("header", "true") \
-        .schema(userSchema_features) \
-        .csv("/Users/davidrundel/Desktop/HdM/BigData/RecommDraft/Stream_From_Neo4j_Features")
-        
-data_features = data_features.select(["id", "name", "danceability", "loudness", "tempo"])
-
-data_features = data_features.selectExpr("id as id_features", \
-                                         "name as name_features", \
-                                        "danceability as danceability", \
-                                        "loudness as loudness", \
-                                         "tempo as tempo")
         
 # --------------------------------------------------------------------------- #
 
-userSchema_distance = StructType().add("loudness", "double") \
-                        .add("liveness", "double") \
-                        .add("tempo", "double") \
-                        .add("valence", "double") \
-                        .add("instrumentalness", "double") \
-                        .add("danceability", "double") \
-                        .add("speechiness", "double") \
-                        .add("mode", "double") \
-                        .add("duration_ms", "double") \
-                        .add("explicit", "boolean") \
-                        .add("artists", "string") \
-                        .add("acousticness", "double") \
-                        .add("name", "string") \
-                        .add("id", "string") \
-                        .add("key", "double") \
-                        .add("time_signature", "double") \
-                        .add("energy", "double") 
-                        
-data_distance= spark \
-        .readStream \
-        .option("sep", ",") \
-        .option("header", "true") \
-        .schema(userSchema_features) \
-        .csv("/Users/davidrundel/Desktop/HdM/BigData/RecommDraft/Stream_From_Neo4j_Distance")
 
-data_distance = data_distance.selectExpr("id as id_distance", \
-                                         "name as name_distance", \
-                                         "acousticness as acousticness")
-    
-    
-
-    
-driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
-
-Distance_Query= "MATCH (n:Track) RETURN n"
-
-
-
-Distance_Query="""MATCH (n:Track)<-[:produced]-(a:Artist) 
-WITH collect(n) as nodes 
-UNWIND nodes as n 
-UNWIND nodes as m 
-WITH * WHERE id(n) < id(m) 
-MATCH path = allShortestPaths( (n)-[*..4]-(m) ) 
-RETURN path"""
-
-Distance_Query="""MATCH (n:Track)
-WITH collect(n) as nodes 
-UNWIND nodes as n 
-UNWIND nodes as m 
-WITH * WHERE id(n) < id(m) 
-MATCH path = allShortestPaths( (n)-[*..4]-(m) ) 
-RETURN path"""
-
-Distance_Query="""MATCH (n:Track)
-WITH collect(n) as all_tracks 
-UNWIND all_tracks as n
-
-MATCH (m:Track)
-WHERE m.name = 'Hey Brother'
-WITH collect(m) as current_track 
-UNWIND current_track as m 
-
-WITH * WHERE id(n) < id(m) 
-
-MATCH path = allShortestPaths( (n)-[*..4]-(m) ) 
-RETURN path"""
-
-#delete
-'''
-MATCH (g:Genre)
-DETACH DELETE g
-'''
-
-Distance_Query="""MATCH (n:Track)
-WITH collect(n) as nodes 
-UNWIND nodes as n 
-UNWIND nodes as m 
-WITH * WHERE id(n) < id(m) 
-MATCH path = allShortestPaths( (n)-[*..]-(m) ) 
-RETURN path"""
-
-
-
-
-
-#noch eingrenzen auf Current Song
-
-
-'''
-CALL algo.allShortestPaths.stream('cost', {
-nodeQuery:'MATCH (n:Track) RETURN id(n) as id',
-relationshipQuery:'MATCH (n:Loc)-[r]-(p:Loc) RETURN id(n) as source, id(p) as target, r.cost as weight',
-graph:'cypher', 
-defaultValue:1.0})
-'''
-
-# Track_Feature_Query= """CALL apoc.export.json.query(
-#                         "MATCH (n:Track) RETURN n",
-#                         "users-age.json")""" 
+#Get distances for all pairs of songs
+Distance_Query="""MATCH (n:Track) WITH collect(n) as nodes UNWIND nodes as n 
+UNWIND nodes as m WITH * WHERE id(n) < id(m) 
+MATCH path = allShortestPaths( (n)-[*..]-(m) ) RETURN path"""
 
 driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
 
@@ -222,132 +91,142 @@ with driver.session() as session:
     for node in nodes:
         distance_list.append(node.data())
         
+driver.close()
+  
 distance_list= [list(distance.values())[0] for distance in distance_list]
 
-
 distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
-df_distance= pd.DataFrame.from_dict(distances)
-
-df_distance1= df_distance.loc[df_distance.iloc[:,0]=='04DwTuZ2VBdJCCC5TROn7L']
-df_distance1= df_distance1.iloc[:,[1, 2]]
-df_distance1= df_distance1.rename(columns={1: "id", 2: "neo_distance"})
-
-
-df_distance2= df_distance.loc[df_distance.iloc[:,1]=='04DwTuZ2VBdJCCC5TROn7L']
-df_distance2= df_distance2.iloc[:,[0, 2]]
-df_distance2= df_distance2.rename(columns={0: "id", 2: "neo_distance"})
-
-df_distance= df_distance1.append(df_distance2)
-df_distance= df_distance.drop_duplicates()
+distances= pd.DataFrame.from_dict(distances)
 
 
 
 
 
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
-driver.close()
+'''
+Input: Current Song & current Parameters from Frontend
+''' 
 
-data= data.merge(df_distance, on='id', how='left')
-data['neo_distance']= data.neo_distance.fillna(100)
-
-
+#Topic Current Song
+userSchema_Song = StructType().add("current_song", "string") \
     
+data_current_song = spark.readStream \
+            .format("kafka")\
+            .option("kafka.bootstrap.servers", "kafka:{port1}")\
+            .option("subscribe", "current_Song")\
+            .load()
+            # .option("sep", ",") \
+            # .option("header", "true") \
+            # .schema(userSchema_features) \
+                
+data_current_song = data_current_song.selectExpr("CAST(value AS STRING)")
+
+data_current_song = data_current_song
+            .withColumn("value", from_json("value", userSchema_Song)) \
+            .select(col('value.*'))
+            
+
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#data_distance.join(data_features, on="id", how="Inner")
-
-from pyspark.sql.functions import expr
-
-joined_data= data_distance.join(data_features,
-                   expr("id_distance = id_features"))
-
-
-from pyspark.sql import SQLContext
-
-sqlCtx = SQLContext(sc)
-data = sqlCtx.createDataFrame(data)
-
-
-
-
-
-
-
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 
-
-
-
-'''
-Transformation: Standardisieren und Enrichment mit EuclideanDistance ausgehend von current Song
-'''
-
-#trackid usw mit persist
-#abstände immer nur temporär
-
-# def foreach_batch_features(data, epoch_id):
-    
-#     # Transform and write batchDF   
-#     from pyspark.ml.feature import VectorAssembler
-#     assembler = VectorAssembler() \
-#                         .setInputCols(["danceability", "loudness", "tempo"]) \
-#                         .setOutputCol('features')
+#Topic Current Parameters
+userSchema_Parameters = StructType().add("parameter", "string") \
+                        .add("alpha", "int") \
+                        .add("weight", "int")
                         
-#     data_features = assembler.transform(data)
-    
-    
-#     from pyspark.ml.feature import StandardScaler
-#     scaler = StandardScaler(inputCol="features",
-#                             outputCol="scaledFeatures",
-#                             withStd=True, withMean=True)
-    
-#     # Compute summary statistics by fitting the StandardScaler
-#     scalerModel = scaler.fit(data_features)
-    
-#     # Normalize each feature to have unit standard deviation and mean 0.
-#     data_features = scalerModel.transform(data_features)
-    
-#     #from pyspark.ml import Pipeline
-#     #pipeline= Pipeline().setStages([assembler, scaler])
-    
-#     data_features = data_features.select(["id_features", "name_features", "scaledFeatures"])
-    
-#     data_features.persist()
+data_parameters = spark.readStream \
+            .format("kafka")\
+            .option("kafka.bootstrap.servers", "kafka:{port1}")\
+            .option("subscribe", "current_Parameters")\
+            .load()
+            # .option("sep", ",") \
+            # .option("header", "true") \
+            # .schema(userSchema_features) \
+                
+data_current_parameter = data_current_parameter.selectExpr("CAST(value AS STRING)")
 
-#     #Kafka Sink an Dashboard    
-#     # data.persist()
-#     # data.write.format(...).save(...) 
-#     # data.unpersist()
+data_current_parameter = data_current_parameter
+            .withColumn("value", from_json("value", userSchema_Parameters)) \
+            .select(col('value.*'))
+    
+    
 
-# stream_features = data_features.writeStream \
-#         .foreachBatch(foreach_batch_features) \
-#         .start()
+    
+    
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+
+'''
+Transformation & Output: Standardisieren und Enrichment mit EuclideanDistance ausgehend von current Song
+'''
+
+#Initialer erster Song?
+current_Song= '04DwTuZ2VBdJCCC5TROn7L'
+
+stream = data_current_song.writeStream \
+        .foreachBatch(foreach_batch_distance) \
+        .start()
         
+def foreach_batch_distance(current_Song_ID, epoch_id):  
+    global current_Song
+    
+    current_Song= current_Song_ID
+   
+stream.awaitTermination()
+
+
+
 # --------------------------------------------------------------------------- #
 
 
-
-def foreach_batch_distance(data_different, epoch_id):  
+stream = data_current_parameter.writeStream \
+        .foreachBatch(foreach_batch_distance) \
+        .start()
+        
+    '''Stattdessen in ForEachBatch'''
+    # .format("kafka")\
+    # .option("kafka.bootstrap.servers", "kafka:9092")\
+    # .option("topic", "graphdata")\
+    # .option("startingOffsets", "latest")\
+    # .option("checkpointLocation","./checkpoints")\
+    # .outputMode("complete")\
+    # .start()
+        
+def foreach_batch_distance(current_Parameters, epoch_id):  
+    #Get global variables
     global data
+    global distances
+    global current_Song
+
+
+    #Delete Previous Distances
+    del data['neo_distance']
+
     
+    #Merge new distances
+    distances_left= distances.loc[distances.iloc[:,0]==current_Song]
+    distances_left= distances_left.iloc[:,[1, 2]]
+    distances_left= distances_left.rename(columns={1: "id", 2: "neo_distance"})
+    
+    distances_right= distances.loc[distances.iloc[:,1]==current_Song]
+    distances_right= distances_right.iloc[:,[0, 2]]
+    distances_right= distances_right.rename(columns={0: "id", 2: "neo_distance"})
+    
+    distances= distances_left.append(distances_right)
+    distances= distances.drop_duplicates()
+    
+    data= data.merge(distances, on='id', how='left')
+    data['neo_distance']= data.neo_distance.fillna(100)
+
+
+
+    #Parameter Subset
     data = data.select(["id", \
                         "name", \
                         "danceability", \
@@ -355,7 +234,11 @@ def foreach_batch_distance(data_different, epoch_id):
                         "tempo", \
                         "neo_distance"])
         
-    data.show()
+        
+    # --------------------------------------------------------------------------- #
+    #PREPROCESSING
+    # --------------------------------------------------------------------------- #        
+    
     
     # Transform and write batchDF 
     from pyspark.ml.feature import VectorAssembler
@@ -366,77 +249,33 @@ def foreach_batch_distance(data_different, epoch_id):
     data = assembler.transform(data)
 
       
-    # from pyspark.ml.feature import StandardScaler
-    # scaler = StandardScaler(inputCol="features",
-    #                         outputCol="scaledFeatures",
-    #                         withStd=True, withMean=True)
-    
+
+    #Normalization
     from pyspark.ml.feature import MinMaxScaler
     scaler = MinMaxScaler(inputCol="features", 
                           outputCol="scaledFeatures")
     
-    # Compute summary statistics by fitting the StandardScaler
     scalerModel = scaler.fit(data)
     
-    # Normalize each feature to have unit standard deviation and mean 0.
     data = scalerModel.transform(data)
-    
-    # from pyspark.ml.feature import Normalizer
-    # normalizer = Normalizer(inputCol="features",
-    #                         outputCol="scaledFeatures")
-    
-    # data = normalizer.transform(data)
-    
-    
     
     data = data.select(["id", \
                         "name", \
-                        "scaledFeatures"])
-
-    
-    
-    
-    
-    
-    # Current Song
-    current_song_ID= '04DwTuZ2VBdJCCC5TROn7L'
+                        "scaledFeatures"])        
+        
+        
+    # --------------------------------------------------------------------------- #
+    #ENRICH WITH EUCLIDEAN DISTANCE ON STEROIDS
+    # --------------------------------------------------------------------------- #        
 
     current_song_feature_vector= data \
                             .select(["scaledFeatures"]) \
-                            .filter("id = '" + current_song_ID + "'") \
+                            .filter("id = '" + current_Song + "'") \
                             .collect()[0]
                                          
     p_list= list(current_song_feature_vector[0])                   
-
-                            
-                            
-    # Current Weights
-
-    # Calculate Euclidean Distance to other Songs
-    import math
-    import pyspark.mllib.linalg
-
-    # val euclideanDistance = udf { (v1: Vector, v2: Vector) =>
-    #         sqrt(Vectors.sqdist(v1, v2))
-    # }
-    
-    from pyspark.sql.functions import udf
-    from pyspark.sql.types import FloatType
-    import pyspark.sql.functions as F
-    from scipy.spatial import distance
-    
-    '''
-    EUCLIDEAN DISTANCE ON STEROIDS
-    '''
-
-#   n = 0                       #Amount of parameteres
-    a_list = [1, 1, 1, 1]      #Index if parameter i is same, wayne or contrary
-    w_list = [1, 1, 2, 1]       #Weight of parameter i
-#   p = []                      #Value of parameter i for current song
-#   q = []                      #Value of parameter i for potential next song
-#   b_list = [0, 1, 0, 0]       #Standard deviation for parameter i, gets added if contrary
-    
-    
+    a_list= current_Parameters.alpha        #z.B. [1, 1, 1, 1] 
+    w_list= current_Parameters.weight       #z.B. [1, 1, 2, 1] 
 
     def euclDistance(q_list):
         try:
@@ -451,382 +290,30 @@ def foreach_batch_distance(data_different, epoch_id):
             
         return distance
 
-
     euclDistanceUDF = F.udf(euclDistance, FloatType())      
     
     data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
     
-    
-    
-    
-    
-    #euclideanDistance = F.udf(lambda x: distance.euclidean(x, current_song_feature_vector), FloatType())
-    # euclideanDistance = F.udf(lambda x: \
-    #                           math.sqrt(sum([(v1_p - v2_p) ** 2 \
-    #                                          for v1_p, v2_p \
-    #                                          in zip(x, current_song_feature_vector)])), \
-    #                           FloatType())
-        
-    # euclideanDistanceOnSteroidsUDF = F.udf(lambda q_list: \
-    #                                         math.sqrt(sum( \
-    #                                         [a * w * ((q - p) ** 2) + w * b \
-    #                                         for a, w, p, q, b  \
-    #                                         in zip(a_list, w_list, p_list, q_list, b_list)])), \
-    #                                         FloatType())
-  
-    '''
-    def euclideanDistanceOnSteroids(q_list):
-        distance= math.sqrt(sum( \
-                                [a * w * ((q - p) ** 2) + w * b \
-                                for a, w, p, q, b  \
-                                in zip(a_list, w_list, p_list, q_list, b_list)]))
-            
-        return distance
-
-
-    euclideanDistanceOnSteroidsUDF = F.udf(lambda q_list: euclideanDistanceOnSteroids(q_list), FloatType())      
-        
-    # for row in data.select('scaledFeatures').collect():
-    #     print("----------")
-    #     print(row[0]) 
-    #     print("----------")
-    
-    data = data.withColumn('distances', \
-                           [euclideanDistanceOnSteroidsUDF(lit(row[0])) \
-                            for row in data.select('scaledFeatures').collect()])
-    '''
-    
-    
-
-        
-        
-    
-        
-    # def euclideanDistanceOnSteroids(q_list):
-        
-    #     q_list['distance']= [euclideanDistanceOnSteroidsUDF(row) for row in q_list['scaledFeatures']]
-    #     print(q_list['distance'])
-        
-    #     return q_list['distance']
-        
-        # q_list['distance']= euclideanDistanceOnSteroidsUDF(q_list['scaledFeatures'])
-        # print(q_list)
-        
-        # return q_list['distance']
-        
-        # for row in q_list.scaledFeatures:
-        
-        # try:
-        #     distance= euclideanDistanceOnSteroidsUDF(q_list)
-            
-        # except:
-        #     distance= 0
-            
-        # return distance
-        
-    #data = data.withColumn('distances', euclideanDistanceOnSteroids(F.col('scaledFeatures')))
-    #data = data.withColumn('distances', euclideanDistanceOnSteroidsUDF('scaledFeatures'))
-    # print(data.select('scaledFeatures'))
-    # print("----------")
-    # print(data.select('scaledFeatures').collect())
-    # print("----------")
-    # print(data.select('scaledFeatures').collect()[0])
-    # print("----------")
-    # print("----------")
-    
-
-    
-    
-    # euclideanDistance = udf(lambda v1: \
-    #                         math.sqrt(sum([(v1_p - v2_p) ** 2 \
-    #                         for v1_p, v2_p \
-    #                         in zip(v1, current_song_feature_vector)])), \
-    #                         FloatType())
-
-    
-    # data = data.withColumn("distance", \
-    #                        euclideanDistance('scaledFeatures'))
-    
-
-    #Filtern des jetzigen Songs (Distance = 0,0)
-    
-    data.show(truncate=False)
-    
-    
     data = data.select(['id', 'scaledFeatures', 'distances']) \
             .orderBy('distances', ascending= True) \
             .where('id not "' + current_song_ID + '"') \
-            .take(3) \
+            .take(5) \
             
-
-    
-    '''BERECHNEN & AN KAFKA'''
-    
-    #data.persist()
-
-    #Kafka Sink an Dashboard    
-    # data.persist()
-    # data.write.format(...).save(...) 
-    # data.unpersist()
-
-stream = joined_data.writeStream \
-        .foreachBatch(foreach_batch_distance) \
-        .start()
-
-
-
-
-
-
-
-
-
-
-# from pyspark.ml.feature import StringIndexer
-# stringindexer = StringIndexer() \
-#         .setInputCol("boxId") \
-#         .setOutputCol("boxId_si")
-
-# from pyspark.ml.feature import OneHotEncoder
-# onehotencoder = OneHotEncoder() \
-#         .setInputCol("boxId_si") \
-#         .setOutputCol("ohe_features")
-
-
-# from pyspark.ml.feature import VectorAssembler
-# vectorAssembler = VectorAssembler() \
-#       .setInputCols(["ohe_features", \
-#                      "last_acceleration", \
-#                      "last_currentSpeed", \
-#                       "rolling_avg_consumption", \
-#                       "rolling_std_consumption"]) \
-#       .setOutputCol("features")
-      
-# from pyspark.ml.regression import LinearRegression
-# lr = LinearRegression(maxIter=10, regParam=0.3, elasticNetParam=0.8) \
-#     .setFeaturesCol("features") \
-#     .setLabelCol("label")
-    
-    
-# from pyspark.ml.tuning import ParamGridBuilder    
-# paramGrid = ParamGridBuilder() \
-#     .addGrid(lr.regParam, [0.1, 0.3, 0.6]) \
-#     .addGrid(lr.elasticNetParam, [0.1, 0.5, 0.8]) \
-#     .build()
-    
-# from pyspark.ml import Pipeline
-# pipeline= Pipeline().setStages([stringindexer, onehotencoder, vectorAssembler, lr])
-    
-# from pyspark.ml.tuning import CrossValidator   
-# from pyspark.ml.evaluation import RegressionEvaluator   
-# crossval = CrossValidator(estimator=pipeline,
-#                           estimatorParamMaps=paramGrid,
-#                           evaluator=RegressionEvaluator(metricName="rmse"),
-#                           numFolds=5)
-
-# crossval = crossval.fit(static_df)
-
-# from pyspark.sql.functions import *
-
-# wd_avg_consumption= csvDF \
-#             .withWatermark("timeStamp", "60 seconds") \
-#             .groupBy("boxId", window("timeStamp", "60 seconds", "15 seconds")) \
-#             .agg(last("timeStamp").alias("last_timeStamp"), \
-#                   last('acceleration').alias("last_acceleration"), \
-#                 last('currentSpeed').alias("last_currentSpeed"), \
-#                   count("consumption").alias("count_consumption"), \
-#                   avg("consumption").alias("rolling_avg_consumption"), \
-#                   stddev("consumption").alias("rolling_std_consumption"), \
-#                   last("consumption").alias("label")) \
                 
-# predictions= model.transform(wd_avg_consumption)
+            
+    # --------------------------------------------------------------------------- #
+    #OUTPUT AN FRONTEND MIT KAFKA
+    # --------------------------------------------------------------------------- #      
 
-
+    data.write \
+        .format("kafka") \
+        .option("kafka.bootstrap.servers", "kafka:{port1}") \
+        .option("topic", "recommendations") \
+        .save()
   
-# data = data.select(["id", "name", "danceability", "loudness", "tempo"])
-
-# stream = data.writeStream \
-#         .format("console") \
-#         .start()
-
-# --------------------------------------------------------------------------- #
-
-
-# # Transform and write batchDF   
-# from pyspark.ml.feature import VectorAssembler
-# assembler = VectorAssembler() \
-#                     .setInputCols(["danceability", "loudness", "tempo"]) \
-#                     .setOutputCol('features')
-                    
-# data = assembler.transform(data)
-
-
-
-# from pyspark.ml.feature import StandardScaler
-# scaler = StandardScaler(inputCol="features",
-#                         outputCol="scaledFeatures",
-#                         withStd=True, withMean=True)
-
-# # Compute summary statistics by fitting the StandardScaler
-# scalerModel = scaler.fit(data)
-
-# # Normalize each feature to have unit standard deviation and mean 0.
-# data = scalerModel.transform(data)
-
-
-# #from pyspark.ml import Pipeline
-
-# #pipeline= Pipeline().setStages([assembler, scaler])
-    
-  
-# stream = data.writeStream \
-#         .format("console") \
-#         .start()
-
-# --------------------------------------------------------------------------- ## --------------------------------------------------------------------------- #
-
-
-
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-
-
-
-
-'''
-Output: Distance pro Song als CSV in Frontend weitergeben
-Alternativ: Top 5
-'''
-
-# stream= data
-#     .writeStream \
-#     .format("console") \
-#     .start()
-    
-# # pred_stream_writejson= predictions \
-# #     .writeStream \
-# #     .format("json") \
-# #     .option("checkpointLocation", \
-# #             "/Users/davidrundel/Desktop/HdM/DataScience/Spark1Try/PredictionOutput/CheckpointLocation") \
-# #     .option("path", \
-# #             "/Users/davidrundel/Desktop/HdM/DataScience/Spark1Try/PredictionOutput/") \
-# #     .start() \
-# #     #.outputMode("complete") \
-# #     #.outputMode("append") \
-    
+              
 stream.awaitTermination()
-
-
-
-
-
-
-
-
-
-
-
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-
-def get_df():
-    data= pd.read_csv("/Users/davidrundel/Desktop/HdM/BigData/RecommDraft/export-2.csv",sep=',')
-    data= data['t']
-    data= data.tolist()
-    
-    import re
-    import ast
-    
-    def add_quotes_to_lists(match):
-        return re.sub(r'([\s\[])([^\],]+)', r'\1"\2"', match.group(0))
-    
-    dict= []
-    
-    for s in data:
-        #d = {i.split(': ')[0]: i.split(': ')[1] for i in s.split(',')}
-        #print(d)
-    
-        s = re.sub(r':\s?(?![{\[\s])([^,}]+)', r': "\1"', s) #Add quotes to dict values
-        s = re.sub(r'(\w+):', r'"\1":', s) #Add quotes to dict keys
-    
-        s = re.sub(r'\[[^\]]+', add_quotes_to_lists, s) #Add quotes to list items
-    
-        final = ast.literal_eval(s) #Evaluate the dictionary
-        print(final)
-        
-        dict.append(final)
-        
-    data_expand= pd.DataFrame.from_dict(dict)
-    data_expand.to_csv("/Users/davidrundel/Desktop/HdM/BigData/RecommDraft/TEMP_DB_QUERY.csv", index= False)
-
-
-# import json
-# d = json.loads(data)
-
-# import hjson
-# for line in data:
-#     print(line)
-#     #json_acceptable_string = line.replace("'", "\"")
-#     #d = json.loads(json_acceptable_string)
-#     hjson.loads(data)
-    
-
-# import ast
-# for line in data:
-#     print("hi")
-#     curr_line=ast.literal_eval(line)
-#     print(curr_line)
-    
-
-
-
-# data= [dict(line) for line in data]
-
-# data = [dict(
-#                item.replace("'", '').split(':')
-#                for item in s[1:-1].split(', ')
-#                )
-#           for s in data]
-
-# #first_row=(data.iloc[0,:])
-
-
-# data_expand= pd.DataFrame.from_dict(data, orient='columns')
+            
 
 
 
