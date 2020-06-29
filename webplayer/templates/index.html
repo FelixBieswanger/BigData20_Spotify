@@ -5,8 +5,10 @@
   
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
-    <script src="script.js"></script>
-    <link rel="stylesheet" href ="style.css">
+    <script src="static/script.js"></script>
+    <script src="https://kit.fontawesome.com/d1328a1a31.js" crossorigin="anonymous"></script>
+    
+    <link rel="stylesheet" href ="static/style.css">
 </head>
 <body>  
     <div id="header">
@@ -27,31 +29,32 @@
             <span id="search-res-7"></span>
         </div>
         <div id="webplayer">
-            <img id="current-track"/> <br /> <br />
-            <b>Now playing:</b> <br/>
+            <img id="current-track" src="static/cover.png" alt="albumcover should be displayed here" width="300" height="300"/><br>
+            <span id="current-track-name"></span> <br>
             <span id="current-track-artist"></span>
-            <span id="current-track-artist2"></span>
-            <span id="current-track-name"></span>
-            <input id="songname" type ="text">
-            <button onclick="play()">Play</button>
-            <button onclick="pause()">Pause</button>
-            <button onclick="resume()">Resume</button>
+            <span id="current-track-artist2"></span><br>
+            
+            <div id="songbuttons">
+                <span class="fas fa-step-backward songnavigation skipprevious" onclick="previous(); "></span>
+                <div id="playbox"><i class= "far fa-play-circle songnavigation playpause" onclick="songHandler(); changeIcon();"></i></div>
+                <span class="fas fa-step-forward songnavigation skipprevious" onclick="skip()"></span>
+            </div>
         </div>
-        <div id="parameter">Loudness<br>
+        <div id="parameter">
             <div id="slidecontainer">
+                Loudness<br>
                 <input type="range" min="1" max="5" value="3" class="slider" id="Loudness"> <br>
                 Danceability<br>
                 <input type="range" min="1" max="5" value="3" class="slider" id="Danceability"><br>
                 ...<br>
                 <input type="range" min="1" max="5" value="3" class="slider" id="...">
                 <button onclick="save()">Save</button>
-
                 <button onclick="reset()">Reset</button>
         </div>
         </div>
     </div>
-    <div id="footer">
-        <p>FAQ, Credits, bla</p>
+    <div id="footer"> 
+        <p>FAQ</p>
     </div>
 </body>
 </html>
