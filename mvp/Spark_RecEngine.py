@@ -14,6 +14,7 @@ from pyspark.sql.types import StructType
 import pandas as pd
 from pyspark.sql.functions import lit
 from pyspark.ml.linalg import VectorUDT, DenseVector
+import pyspark.sql
 
 
 
@@ -21,6 +22,45 @@ from pyspark.ml.linalg import VectorUDT, DenseVector
 sc = SparkContext("local[2]", "EuclideanDistanceOnSteroids") #1.Spark, Mesos, YARN URL or local, 2. appName-Parametr
 ssc = StreamingContext(sc, 10) #Spark-Context-Object, Interval 10 seconds
 spark= SparkSession(sc)
+
+
+
+
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+
+
+
+
+
+from neo4j import GraphDatabase
+
+uri = "bolt://40.119.32.25:7687"
+driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
+
+Track_Feature_Query= "MATCH (n:Track) RETURN n"
+
+# Track_Feature_Query= """CALL apoc.export.json.query(
+#                         "MATCH (n:Track) RETURN n",
+#                         "users-age.json")""" 
+
+with driver.session() as session:
+    nodes = session.run(Track_Feature_Query)
+    
+    track_list= [] 
+    
+    for node in nodes:
+        track_list.append(node.data())
+        
+track_list= [list(track.values())[0] for track in track_list]
+
+data= pd.DataFrame.from_dict(track_list)
+
+driver.close()
+
+current_song_ID= '04DwTuZ2VBdJCCC5TROn7L'
 
 
 
@@ -99,8 +139,132 @@ data_distance= spark \
 data_distance = data_distance.selectExpr("id as id_distance", \
                                          "name as name_distance", \
                                          "acousticness as acousticness")
+    
+    
+
+    
+driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
+
+Distance_Query= "MATCH (n:Track) RETURN n"
+
+
+
+Distance_Query="""MATCH (n:Track)<-[:produced]-(a:Artist) 
+WITH collect(n) as nodes 
+UNWIND nodes as n 
+UNWIND nodes as m 
+WITH * WHERE id(n) < id(m) 
+MATCH path = allShortestPaths( (n)-[*..4]-(m) ) 
+RETURN path"""
+
+Distance_Query="""MATCH (n:Track)
+WITH collect(n) as nodes 
+UNWIND nodes as n 
+UNWIND nodes as m 
+WITH * WHERE id(n) < id(m) 
+MATCH path = allShortestPaths( (n)-[*..4]-(m) ) 
+RETURN path"""
+
+Distance_Query="""MATCH (n:Track)
+WITH collect(n) as all_tracks 
+UNWIND all_tracks as n
+
+MATCH (m:Track)
+WHERE m.name = 'Hey Brother'
+WITH collect(m) as current_track 
+UNWIND current_track as m 
+
+WITH * WHERE id(n) < id(m) 
+
+MATCH path = allShortestPaths( (n)-[*..4]-(m) ) 
+RETURN path"""
+
+#delete
+'''
+MATCH (g:Genre)
+DETACH DELETE g
+'''
+
+Distance_Query="""MATCH (n:Track)
+WITH collect(n) as nodes 
+UNWIND nodes as n 
+UNWIND nodes as m 
+WITH * WHERE id(n) < id(m) 
+MATCH path = allShortestPaths( (n)-[*..]-(m) ) 
+RETURN path"""
+
+
+
+
+
+#noch eingrenzen auf Current Song
+
+
+'''
+CALL algo.allShortestPaths.stream('cost', {
+nodeQuery:'MATCH (n:Track) RETURN id(n) as id',
+relationshipQuery:'MATCH (n:Loc)-[r]-(p:Loc) RETURN id(n) as source, id(p) as target, r.cost as weight',
+graph:'cypher', 
+defaultValue:1.0})
+'''
+
+# Track_Feature_Query= """CALL apoc.export.json.query(
+#                         "MATCH (n:Track) RETURN n",
+#                         "users-age.json")""" 
+
+driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
+
+with driver.session() as session:
+    nodes = session.run(Distance_Query)
+    
+    distance_list= [] 
+    
+    for node in nodes:
+        distance_list.append(node.data())
         
-#data_distance = data_distance.select(["id", "name", "acousticness"]) 
+distance_list= [list(distance.values())[0] for distance in distance_list]
+
+
+distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
+df_distance= pd.DataFrame.from_dict(distances)
+
+df_distance1= df_distance.loc[df_distance.iloc[:,0]=='04DwTuZ2VBdJCCC5TROn7L']
+df_distance1= df_distance1.iloc[:,[1, 2]]
+df_distance1= df_distance1.rename(columns={1: "id", 2: "neo_distance"})
+
+
+df_distance2= df_distance.loc[df_distance.iloc[:,1]=='04DwTuZ2VBdJCCC5TROn7L']
+df_distance2= df_distance2.iloc[:,[0, 2]]
+df_distance2= df_distance2.rename(columns={0: "id", 2: "neo_distance"})
+
+df_distance= df_distance1.append(df_distance2)
+df_distance= df_distance.drop_duplicates()
+
+
+
+
+
+
+driver.close()
+
+data= data.merge(df_distance, on='id', how='left')
+data['neo_distance']= data.neo_distance.fillna(100)
+
+
+    
+        
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -111,6 +275,18 @@ from pyspark.sql.functions import expr
 
 joined_data= data_distance.join(data_features,
                    expr("id_distance = id_features"))
+
+
+from pyspark.sql import SQLContext
+
+sqlCtx = SQLContext(sc)
+data = sqlCtx.createDataFrame(data)
+
+
+
+
+
+
 
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
@@ -169,12 +345,22 @@ Transformation: Standardisieren und Enrichment mit EuclideanDistance ausgehend v
 
 
 
-def foreach_batch_distance(data, epoch_id):
+def foreach_batch_distance(data_different, epoch_id):  
+    global data
+    
+    data = data.select(["id", \
+                        "name", \
+                        "danceability", \
+                        "loudness", \
+                        "tempo", \
+                        "neo_distance"])
+        
+    data.show()
     
     # Transform and write batchDF 
     from pyspark.ml.feature import VectorAssembler
     assembler = VectorAssembler() \
-                        .setInputCols(["danceability", "loudness", "tempo", "acousticness"]) \
+                        .setInputCols(["danceability", "loudness", "tempo", "neo_distance"]) \
                         .setOutputCol('features')
                         
     data = assembler.transform(data)
@@ -203,8 +389,8 @@ def foreach_batch_distance(data, epoch_id):
     
     
     
-    data = data.select(["id_distance", \
-                        "name_distance", \
+    data = data.select(["id", \
+                        "name", \
                         "scaledFeatures"])
 
     
@@ -213,11 +399,11 @@ def foreach_batch_distance(data, epoch_id):
     
     
     # Current Song
-    current_song_ID= '2glGP8kEfACgJdZ86kWxhN'
+    current_song_ID= '04DwTuZ2VBdJCCC5TROn7L'
 
     current_song_feature_vector= data \
                             .select(["scaledFeatures"]) \
-                            .filter("id_distance = '" + current_song_ID + "'") \
+                            .filter("id = '" + current_song_ID + "'") \
                             .collect()[0]
                                          
     p_list= list(current_song_feature_vector[0])                   
@@ -244,20 +430,20 @@ def foreach_batch_distance(data, epoch_id):
     '''
 
 #   n = 0                       #Amount of parameteres
-    a_list = [1, -1, 1, 1]      #Index if parameter i is same, wayne or contrary
+    a_list = [1, 1, 1, 1]      #Index if parameter i is same, wayne or contrary
     w_list = [1, 1, 2, 1]       #Weight of parameter i
 #   p = []                      #Value of parameter i for current song
 #   q = []                      #Value of parameter i for potential next song
 #   b_list = [0, 1, 0, 0]       #Standard deviation for parameter i, gets added if contrary
-    'how to generate this automatically? Function is 1 if a is -1'
+    
     
 
     def euclDistance(q_list):
         try:
             distance= math.sqrt(sum( \
-                                    [a * w * ((q - p) ** 2) + w * (1 if b==(-1) else 0) \
-                                    for a, w, p, q, b  \
-                                    in zip(a_list, w_list, p_list, q_list, b_list)]))
+                                    [a * w * ((q - p) ** 2) + w * (1 if a==(-1) else 0) \
+                                    for a, w, p, q  \
+                                    in zip(a_list, w_list, p_list, q_list)]))
                 
         except: 
             print("Except block!")
@@ -367,9 +553,9 @@ def foreach_batch_distance(data, epoch_id):
     data.show(truncate=False)
     
     
-    data = data.select(['id_distance', 'scaledFeatures', 'distances']) \
+    data = data.select(['id', 'scaledFeatures', 'distances']) \
             .orderBy('distances', ascending= True) \
-            .where('distances > 0.0') \
+            .where('id not "' + current_song_ID + '"') \
             .take(3) \
             
 
