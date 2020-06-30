@@ -234,6 +234,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         "tempo", \
                         "neo_distance"])
         
+    #Enables Parallel Processing on Different Nodes
+    data = sc.parallelize(data)
+        
         
     # --------------------------------------------------------------------------- #
     #PREPROCESSING
