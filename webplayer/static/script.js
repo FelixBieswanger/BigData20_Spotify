@@ -84,13 +84,17 @@ function save(save){
 
 }
 
-function reset(){
-    index.getElementById('Loudness').value = 3;
-    index.getElementById('Danceability').value = 3;
-    index.getElementById('...').value = 3;
+function updateTextInput1(val) {
+          document.getElementById('textInput1').value=document.getElementById('Loudness').value;
+        }
 
+function updateTextInput2(val) {
+          document.getElementById('textInput2').value=document.getElementById('Danceability').value;
+        }
 
-};
+function updateTextInput3(val) {
+          document.getElementById('textInput3').value=document.getElementById('Tempo').value;
+        }
 
 function songHandler(){
     if(isPlaying){
@@ -106,6 +110,32 @@ function songHandler(){
         songPaused = false;
     }
 }
+
+//get Song features for the current track
+function getFeatures(){
+    $.ajax({
+    url:"https://api.spotify.com/v1/audio-features/" + getCurrentTrack().data,
+    type:"GET",
+    data:"danceability" + "loudness" + "tempo",
+    beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+            success: function(data) {
+                console.log(data)
+            }
+    })
+
+}
+
+//get the currently playing track
+function getCurrentTrack (){
+    $.ajax({
+    url: "https://api.spotify.com/v1/me/player/currently-playing",
+    type: "GET",
+    data: "id"
+    beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+            success: function(data) {
+                console.log(data)
+            }
+    })
 
 // Play a track using our new device ID
 function play() {
@@ -228,3 +258,4 @@ source.addEventListener("message", function (e) {
     message = JSON.parse(e.data);
 
 });
+
