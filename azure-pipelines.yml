@@ -63,7 +63,7 @@ stages:
     displayName: Deploy
     pool:
       vmImage: $(vmImageName)
-    environment: 'FelixBieswangerBigData20Spotify.default'
+    environment: 'FelixBieswangerBigData20Spotify'
     strategy:
       runOnce:
         deploy:
