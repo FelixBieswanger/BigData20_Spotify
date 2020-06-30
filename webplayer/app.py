@@ -16,16 +16,23 @@ def producer():
     producer = KafkaProducer(bootstrap_servers="kafka:9092",
                              value_serializer=lambda x: json.dumps(x).encode("ascii"))
 
-    message = {
-        "currentsong":"bla",
-        "parameters":[
-            {"parametername":"alpha"},
-            {"parametername":"alpha"}
+    message1 = {
+        "current_song":"id",
+        "current_song":"name"
+
+    }
+
+    message2 = {
+        "current_song": "id",
+        "parameters": [
+            {"danceability": "alpha"},
+            {"loudness": "alpha"},
+            {"tempo": "alpha"},
         ]
     }
 
-
-    producer.send("topicname",data=message)
+    producer.send("current_song",data=message1)
+    producer.send("parameter", data=message2)
 
 
 @app.route("/consumer")
