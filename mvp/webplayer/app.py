@@ -9,34 +9,35 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-@app.route("/formdata", methods=["POST"])
-def producer():
+@app.route("/parameters", methods=["POST"])
+def producer1():
     #form data to python dict
 
     producer = KafkaProducer(bootstrap_servers="kafka:9092",value_serializer=lambda x: json.dumps(x).encode("ascii"))
     data = request.form.to_dict()
     keys = list(data.keys())[0]
     message = json.loads(keys)
+    print(message)  
+
+    producer.send("current_Parameters", message)
+    producer.flush()
+
+    return "Done"
+
+
+@app.route("/currentSong", methods=["POST"])
+def producer2():
+    #form data to python dict
+
+    producer = KafkaProducer(bootstrap_servers="kafka:9092",
+                             value_serializer=lambda x: json.dumps(x).encode("ascii"))
+    data = request.form.to_dict()
+    keys = list(data.keys())[0]
+    message = json.loads(keys)
     print(message)
 
-    message1 = {
-        "current_song":"id",
-
-    }
-
-    message2 = {
-        "current_song": "id",
-        "parameters": [
-            {"danceability": "alpha", "weight": ""},
-            {"loudness": "alpha", "weight": ""},
-            {"tempo": "alpha", "weight": ""},
-            {"distance": "alpha", "weight": ""}
-        ]
-    }
-
-    producer.send("current_Song",message1)
-    producer.send("current_Parameters", message2)
-    producer.flush
+    producer.send("current_Song", message)
+    producer.flush()
 
     return "Done"
 

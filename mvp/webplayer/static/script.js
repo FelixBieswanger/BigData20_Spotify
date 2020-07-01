@@ -66,8 +66,14 @@ window.onSpotifyPlayerAPIReady = () => {
     // Playback status updates
     player.on('player_state_changed', state => {
         console.log(state) //Standard SDK
+        
+        //TO IMPLEMENT
+        sendnewTrackToTopic(songid)
+
         $('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
         $('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
+
+
         $('#current-track-artist').text(state.track_window.current_track.artists[0].name);
         $('#current-track-artist2').text(state.track_window.current_track.artists[1].name);
     });
@@ -106,10 +112,9 @@ function save(){
             }
         }
     }
-    //getCurrentTrack();
-
+   
     $.ajax({
-        url: "http://localhost:6969/formdata",
+        url: "/parameters",
         type: "POST",
         data: JSON.stringify(currentParametersJson),
         success: function (msg) {
@@ -321,3 +326,19 @@ source.addEventListener("message", function (e) {
     message = JSON.parse(e.data);
     addToQueue(message["id"]);
 });
+
+
+function sendnewTrackToTopic(songid){
+
+    data = {
+        "currentSong":songid
+    }
+
+    // Implement on fail
+    $.ajax({
+        url: "/currentSong",
+        type: "POST",
+        data: JSON.stringify(data),
+    });
+
+}
