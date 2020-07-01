@@ -18,16 +18,16 @@ def producer():
 
     message1 = {
         "current_song":"id",
-        "current_song":"name"
 
     }
 
     message2 = {
         "current_song": "id",
         "parameters": [
-            {"danceability": "alpha"},
-            {"loudness": "alpha"},
-            {"tempo": "alpha"},
+            {"danceability": "alpha", "weight": ""},
+            {"loudness": "alpha", "weight": ""},
+            {"tempo": "alpha", "weight": ""},
+            {"distance": "alpha", "weight": ""}
         ]
     }
 

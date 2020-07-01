@@ -1,5 +1,8 @@
 var isPlaying = false;
 var songPaused = false;
+var danceability
+var loudness
+var tempo
 // Get the hash of the url
 const hash = window.location.hash
 .substring(1)
@@ -80,21 +83,28 @@ slider.oninput = function() {
 output.innerHTML = this.value;
 }
 
-function save(save){
+function save(){
 
-}
+    function show_value1(this.value);
+    function show_value2(this.value);
+    function show_value3(this.value);
+    document.getElementById("Loudness").value
+    document.getElementById("Danceability").value
+    document.getElementById("Tempo").value
 
-function updateTextInput1(val) {
-          document.getElementById('textInput1').value=document.getElementById('Loudness').value;
-        }
+    }
 
-function updateTextInput2(val) {
-          document.getElementById('textInput2').value=document.getElementById('Danceability').value;
-        }
+     function show_value1(this.value){
+         loudness.value = this.value
+     }
 
-function updateTextInput3(val) {
-          document.getElementById('textInput3').value=document.getElementById('Tempo').value;
-        }
+     function show_value2(this.value){
+         danceability.value = this.value
+     }
+
+     function show_value3(this.value){
+         tempo.value = this.value
+     }
 
 function songHandler(){
     if(isPlaying){
@@ -130,12 +140,29 @@ function getCurrentTrack (){
     $.ajax({
     url: "https://api.spotify.com/v1/me/player/currently-playing",
     type: "GET",
-    data: "id"
+    data: "id",
     beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
             success: function(data) {
                 console.log(data)
             }
     })
+
+//Wert der Slider anzeigen
+function show_value1(x)
+{
+ document.getElementById("slider_value1").innerHTML=x;
+}
+
+function show_value2(x)
+{
+ document.getElementById("slider_value2").innerHTML=x;
+}
+
+function show_value2(x)
+{
+ document.getElementById("slider_value3").innerHTML=x;
+}
+
 
 // Play a track using our new device ID
 function play() {
