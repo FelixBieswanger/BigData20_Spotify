@@ -16,24 +16,37 @@ def producer():
     producer = KafkaProducer(bootstrap_servers="kafka:9092",
                              value_serializer=lambda x: json.dumps(x).encode("ascii"))
 
-    message = {
-        "currentsong":"bla",
-        "parameters":[
-            {"parametername":"alpha"},
-            {"parametername":"alpha"}
+    message1 = {
+        "current_song":"id",
+
+    }
+
+    message2 = {
+        "current_song": "id",
+        "parameters": [
+            {"danceability": "alpha", "weight": ""},
+            {"loudness": "alpha", "weight": ""},
+            {"tempo": "alpha", "weight": ""},
+            {"distance": "alpha", "weight": ""}
         ]
     }
 
-
-    producer.send("topicname",data=message)
+    producer.send("current_song",data=message1)
+    producer.send("parameter", data=message2)
 
 
 @app.route("/consumer")
 def consumer():
-    pass
+    consumer = KafkaConsumer("app", bootstrap_servers="kafka:9092", value_deserializer=lambda x: json.loads(x.decode('utf-8')), auto_offset_reset="earliest")
 
+    for message in consumer:
+        message = message.value
 
-
+    def readjson():
+        # opening a json for now because kafka wont run on my computer :-)
+        with open('message.json') as f:
+            data = json.load(f)
+            return data
 
 
 

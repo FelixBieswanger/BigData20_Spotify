@@ -4,10 +4,13 @@
     <title>spotify live dj session test</title>
   
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='spotify-player.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
-    <script src="static/script.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="https://kit.fontawesome.com/d1328a1a31.js" crossorigin="anonymous"></script>
-    
+    <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='spotify-player.js') }}"></script>
+
     <link rel="stylesheet" href ="static/style.css">
 </head>
 <body>  
@@ -39,17 +42,21 @@
                 <div id="playbox"><i class= "far fa-play-circle songnavigation playpause" onclick="songHandler(); changeIcon();"></i></div>
                 <span class="fas fa-step-forward songnavigation skipprevious" onclick="skip()"></span>
             </div>
+            <br><br>
+            <button onclick="readJson()">message event</button>
         </div>
         <div id="parameter">
             <div id="slidecontainer">
                 Loudness<br>
-                <input type="range" min="1" max="5" value="3" class="slider" id="Loudness"> <br>
+                <span id="slider_value1" style="color:red;font-weight:bold;"></span><br>
+                <input type="range" min="-100" max="100" value="50" step="1" class="slider" id="Loudness" onchange="show_value1(this.value)"><br>
                 Danceability<br>
-                <input type="range" min="1" max="5" value="3" class="slider" id="Danceability"><br>
-                ...<br>
-                <input type="range" min="1" max="5" value="3" class="slider" id="...">
-                <button onclick="save()">Save</button>
-                <button onclick="reset()">Reset</button>
+                <span id="slider_value2" style="color:red;font-weight:bold;"></span><br>
+                <input type="range" min="0" max="100" value="50" step="1" class="slider" id="Danceability" onchange="show_value2(this.value)"><br>
+                Tempo<br>
+                <span id="slider_value3" style="color:red;font-weight:bold;"></span><br>
+                <input type="range" min="0" max="100" value="50" step="1" class="slider" id="Tempo" onchange="show_value3(this.value)"><br>
+                <button onclick="save()">Speichern</button>
         </div>
         </div>
     </div>

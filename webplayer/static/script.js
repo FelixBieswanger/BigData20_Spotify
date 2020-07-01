@@ -1,5 +1,8 @@
 var isPlaying = false;
 var songPaused = false;
+var danceability;
+var loudness;
+var tempo;
 // Get the hash of the url
 const hash = window.location.hash
 .substring(1)
@@ -25,7 +28,8 @@ const scopes = [
     'streaming',
     'user-read-email',
     'user-read-private',
-    'user-modify-playback-state'
+    'user-modify-playback-state',
+    'user-read-currently-playing'
 ];
 
 // If there is no token, redirect to Spotify authorization
@@ -34,8 +38,15 @@ if (!_token) {
 }
 
 var id = '';
-var currentSong;
-var searchResult; 
+var currentSongId;
+var searchResult;
+
+/**var nextSong = new EventSource("/songs");
+
+nextSong.addEventListener("message", function(songid){
+    songid = JSON.parse(songid.data);
+    addToQueue(songid);
+});**/
 // Set up the Web Playback SDK
 
 window.onSpotifyPlayerAPIReady = () => {
@@ -46,51 +57,59 @@ window.onSpotifyPlayerAPIReady = () => {
     });
 
 // Error handling
-player.addListener('initialization_error', ({ message }) => { console.error(message); });
-player.addListener('authentication_error', ({ message }) => { console.error(message); });
-player.addListener('account_error', ({ message }) => { console.error(message); });
-player.addListener('playback_error', ({ message }) => { console.error(message); });
+    player.addListener('initialization_error', ({ message }) => { console.error(message); });
+    player.addListener('authentication_error', ({ message }) => { console.error(message); });
+    player.addListener('account_error', ({ message }) => { console.error(message); });
+    player.addListener('playback_error', ({ message }) => { console.error(message); });
 
 
     // Playback status updates
-player.on('player_state_changed', state => {
-    console.log(state) //Standard SDK
-    $('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
-    $('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
-    $('#current-track-artist').text(state.track_window.current_track.artists[0].name);
-    $('#current-track-artist2').text(state.track_window.current_track.artists[1].name);
+    player.on('player_state_changed', state => {
+        console.log(state) //Standard SDK
+        $('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
+        $('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
+        $('#current-track-artist').text(state.track_window.current_track.artists[0].name);
+        $('#current-track-artist2').text(state.track_window.current_track.artists[1].name);
     });
 
     // Ready
-player.on('ready', data => {
-    console.log('Ready with Device ID', data.device_id);
-    id = data.device_id;	
+    player.on('ready', data => {
+        console.log('Ready with Device ID', data.device_id);
+        id = data.device_id;
     });
 
     // Connect to the player!
-player.connect();
+    player.connect();
 }
 
 var slider = document.getElementById("myRange");
 var output = document.getElementById("demo");
-output.innerHTML = slider.value; // Display the default slider value
 
-// Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
-output.innerHTML = this.value;
+function save(){
+    loudness = document.getElementById("Loudness").value;
+    danceability = document.getElementById("Danceability").value
+    tempo = document.getElementById("Tempo").value
+
+    var currentParametersJson = {"parameters":
+        {
+            "danceability":{
+                "alpha": danceability,
+                "weight": 2
+            },
+            "loudness":{
+                "alpha": loudness,
+                "weight": 2
+            },
+            "tempo":{
+                "alpha": tempo,
+                "weight": 2
+            }
+        }
+    }
+
+    console.log(currentParametersJson);
+    getCurrentTrack();
 }
-
-function save(save){
-
-}
-
-function reset(){
-    index.getElementById('Loudness').value = 3;
-    index.getElementById('Danceability').value = 3;
-    index.getElementById('...').value = 3;
-
-
-};
 
 function songHandler(){
     if(isPlaying){
@@ -106,6 +125,47 @@ function songHandler(){
         songPaused = false;
     }
 }
+
+//get Song features for the current track
+function getFeatures(){
+    $.ajax({
+    url:"https://api.spotify.com/v1/audio-features/" + getCurrentTrack().data,
+    type:"GET",
+    data:"danceability" + "loudness" + "tempo",
+    beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+            success: function(data) {
+                console.log(data)
+            }
+    })
+
+}
+
+//get the currently playing track
+function getCurrentTrack (){
+    $.ajax({
+    url: "https://api.spotify.com/v1/me/player/currently-playing",
+    type: "GET",
+    beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+            success: function(data) {
+                console.log(data);
+                currentSongId = {"id": data.item.id};
+                console.log(currentSongId);
+            }
+    })
+}
+//Wert der Slider anzeigen
+function show_value1(x){
+    document.getElementById("slider_value1").innerHTML=x;
+}
+
+function show_value2(x){
+    document.getElementById("slider_value2").innerHTML=x;
+}
+
+function show_value3(x){
+    document.getElementById("slider_value3").innerHTML=x;
+}
+
 
 // Play a track using our new device ID
 function play() {
@@ -165,6 +225,25 @@ function skip(){
         });
 }
 
+function addToQueue(songid){
+    var uri = 'spotify:track:' + songid
+    $.ajax({
+        url: 'https://api.spotify.com/v1/me/player/queue?&uri=' + uri,
+        type: 'POST',
+        beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+        success: function(data) {
+            console.log(data)
+        }
+    });
+}
+
+function readJson(){
+    $.getJSON("/static/message.json", function(json){
+        console.log(json);
+        addToQueue(json.id);
+    });
+}
+
 function search(){
     var searchcontext = $('#searchbox').val();
     console.log(searchcontext)
@@ -219,12 +298,3 @@ function changeIcon(){
     $(".playpause").toggleClass("fa-pause-circle")
     $(".playpause").toggleClass("fa-play-circle")
 }
-
-var source = new EventSource("/consumer");
-
-source.addEventListener("message", function (e) {
-
-    //JS Davids Recommandation
-    message = JSON.parse(e.data);
-
-});

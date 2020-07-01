@@ -51,7 +51,7 @@ spark= SparkSession(sc)
 Input: Initiales Laden der Tracks und zugehörigen Features aus Neo4J
 ''' 
 
-uri = "bolt://40.119.32.25:7687"
+uri = "bolt://52.143.254.232:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
 
 Track_Feature_Query= "MATCH (n:Track) RETURN n"
@@ -68,8 +68,7 @@ track_list= [list(track.values())[0] for track in track_list]
 
 data= pd.DataFrame.from_dict(track_list)
 
-sqlCtx = SQLContext(sc)
-data = sqlCtx.createDataFrame(data)
+
             
 
         
@@ -116,7 +115,7 @@ userSchema_Song = StructType().add("current_song", "string") \
     
 data_current_song = spark.readStream \
             .format("kafka")\
-            .option("kafka.bootstrap.servers", "kafka:{port1}")\
+            .option("kafka.bootstrap.servers", "kafka:9092")\
             .option("subscribe", "current_Song")\
             .load()
             # .option("sep", ",") \
@@ -125,7 +124,7 @@ data_current_song = spark.readStream \
                 
 data_current_song = data_current_song.selectExpr("CAST(value AS STRING)")
 
-data_current_song = data_current_song
+data_current_song = data_current_song \
             .withColumn("value", from_json("value", userSchema_Song)) \
             .select(col('value.*'))
             
@@ -140,7 +139,7 @@ userSchema_Parameters = StructType().add("parameter", "string") \
                         
 data_parameters = spark.readStream \
             .format("kafka")\
-            .option("kafka.bootstrap.servers", "kafka:{port1}")\
+            .option("kafka.bootstrap.servers", "kafka:9092")\
             .option("subscribe", "current_Parameters")\
             .load()
             # .option("sep", ",") \
@@ -149,7 +148,7 @@ data_parameters = spark.readStream \
                 
 data_current_parameter = data_current_parameter.selectExpr("CAST(value AS STRING)")
 
-data_current_parameter = data_current_parameter
+data_current_parameter = data_current_parameter \
             .withColumn("value", from_json("value", userSchema_Parameters)) \
             .select(col('value.*'))
     
@@ -189,7 +188,7 @@ stream = data_current_parameter.writeStream \
         .foreachBatch(foreach_batch_distance) \
         .start()
         
-    '''Stattdessen in ForEachBatch'''
+#'''Stattdessen in ForEachBatch'''
     # .format("kafka")\
     # .option("kafka.bootstrap.servers", "kafka:9092")\
     # .option("topic", "graphdata")\
@@ -222,9 +221,10 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     distances= distances.drop_duplicates()
     
     data= data.merge(distances, on='id', how='left')
-    data['neo_distance']= data.neo_distance.fillna(100)
-
-
+    data['neo_distance']= data.neo_distance.fillna(100)  
+    
+    sqlCtx = SQLContext(sc)
+    data = sqlCtx.createDataFrame(data)
 
     #Parameter Subset
     data = data.select(["id", \
