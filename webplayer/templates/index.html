@@ -4,8 +4,9 @@
     <title>spotify live dj session test</title>
   
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='spotify-player.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script> 
-    <script src="static/script.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="https://kit.fontawesome.com/d1328a1a31.js" crossorigin="anonymous"></script>
     
     <link rel="stylesheet" href ="static/style.css">
@@ -39,6 +40,8 @@
                 <div id="playbox"><i class= "far fa-play-circle songnavigation playpause" onclick="songHandler(); changeIcon();"></i></div>
                 <span class="fas fa-step-forward songnavigation skipprevious" onclick="skip()"></span>
             </div>
+            <br><br>
+            <button onclick="readJson()">message event</button>
         </div>
         <div id="parameter">
             <div id="slidecontainer">

@@ -37,10 +37,16 @@ def producer():
 
 @app.route("/consumer")
 def consumer():
-    pass
+    consumer = KafkaConsumer("app", bootstrap_servers="kafka:9092", value_deserializer=lambda x: json.loads(x.decode('utf-8')), auto_offset_reset="earliest")
 
+    for message in consumer:
+        message = message.value
 
-
+    def readjson():
+        # opening a json for now because kafka wont run on my computer :-)
+        with open('message.json') as f:
+            data = json.load(f)
+            return data
 
 
 

@@ -35,7 +35,14 @@ if (!_token) {
 
 var id = '';
 var currentSong;
-var searchResult; 
+var searchResult;
+
+/**var nextSong = new EventSource("/songs");
+
+nextSong.addEventListener("message", function(songid){
+    songid = JSON.parse(songid.data);
+    addToQueue(songid);
+});**/
 // Set up the Web Playback SDK
 
 window.onSpotifyPlayerAPIReady = () => {
@@ -128,15 +135,15 @@ function getFeatures(){
 //get the currently playing track
 function getCurrentTrack (){
     $.ajax({
-    url: "https://api.spotify.com/v1/me/player/currently-playing",
-    type: "GET",
-    data: "id"
+    url: 'https://api.spotify.com/v1/me/player/currently-playing',
+    type: 'GET',
+    data: 'id',
     beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
             success: function(data) {
                 console.log(data)
             }
     })
-
+}
 // Play a track using our new device ID
 function play() {
     var uri = 'spotify:track:0ed6evAMZvewGh4UI9KkVU", "spotify:track:0I67c6jPoBxVkUwo02bZnD';
@@ -193,6 +200,25 @@ function skip(){
                 console.log(data)
             }
         });
+}
+
+function addToQueue(songid){
+    var uri = 'spotify:track:' + songid
+    $.ajax({
+        url: 'https://api.spotify.com/v1/me/player/queue?&uri=' + uri,
+        type: 'POST',
+        beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+        success: function(data) {
+            console.log(data)
+        }
+    });
+}
+
+function readJson(){
+    $.getJSON("/static/message.json", function(json){
+        console.log(json);
+        addToQueue(json.id);
+    });
 }
 
 function search(){
