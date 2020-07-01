@@ -13,7 +13,7 @@ def index():
 def producer():
     #form data to python dict
 
-    #producer = KafkaProducer(bootstrap_servers="kafka:9092",value_serializer=lambda x: json.dumps(x).encode("ascii"))
+    producer = KafkaProducer(bootstrap_servers="kafka:9092",value_serializer=lambda x: json.dumps(x).encode("ascii"))
     data = request.form.to_dict()
     keys = list(data.keys())[0]
     message = json.loads(keys)
@@ -34,23 +34,24 @@ def producer():
         ]
     }
 
-    #producer.send("current_song",data=message1)
-    #producer.send("parameter", data=message2)
-    return "Hello"
+    producer.send("current_Song",message1)
+    producer.send("current_Parameters", message2)
+    producer.flush
 
-@app.route("/consumer")
+    return "Done"
+
+@app.route("/recomendations")
 def consumer():
-    consumer = KafkaConsumer("app", bootstrap_servers="kafka:9092", value_deserializer=lambda x: json.loads(x.decode('utf-8')), auto_offset_reset="earliest")
+    consumer = KafkaConsumer("recommendations", bootstrap_servers="kafka:9092",
+                             value_deserializer=lambda x: json.loads(x.decode('utf-8')), auto_offset_reset="earliest")
 
-    for message in consumer:
-        message = message.value
+    #Using Yield create an Generator
+    def events():
+        for message in consumer:
+            yield 'data:{0}\n\n'.format(message.value)
 
-    def readjson():
-        # opening a json for now because kafka wont run on my computer :-)
-        with open('message.json') as f:
-            data = json.load(f)
-            return data
-
+    #Mimetype: Event-Stream takes an Generator
+    return Response(events(), mimetype="text/event-stream")
 
 
 if __name__ == "__main__":

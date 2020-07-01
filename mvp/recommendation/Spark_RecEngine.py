@@ -51,8 +51,8 @@ spark= SparkSession(sc)
 Input: Initiales Laden der Tracks und zugehörigen Features aus Neo4J
 ''' 
 
-uri = "bolt://52.143.254.232:7687"
-driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
+uri = "bolt://neo4j:7687/db/data"
+driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"), encrypted=False)
 
 Track_Feature_Query= "MATCH (n:Track) RETURN n"
 
@@ -80,7 +80,7 @@ Distance_Query="""MATCH (n:Track) WITH collect(n) as nodes UNWIND nodes as n
 UNWIND nodes as m WITH * WHERE id(n) < id(m) 
 MATCH path = allShortestPaths( (n)-[*..]-(m) ) RETURN path"""
 
-driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
+#driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
 
 with driver.session() as session:
     nodes = session.run(Distance_Query)
@@ -310,7 +310,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
 
     data.write \
         .format("kafka") \
-        .option("kafka.bootstrap.servers", "kafka:{port1}") \
+        .option("kafka.bootstrap.servers", "kafka:9092") \
         .option("topic", "recommendations") \
         .save()
   

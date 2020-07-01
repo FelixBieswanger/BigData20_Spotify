@@ -309,3 +309,15 @@ function changeIcon(){
     $(".playpause").toggleClass("fa-pause-circle")
     $(".playpause").toggleClass("fa-play-circle")
 }
+
+
+
+
+//TO DO IMPLEMENT NEW RECOMENDATION
+
+var source = new EventSource("/recomendations");
+
+source.addEventListener("message", function (e) {
+    message = JSON.parse(e.data);
+    addToQueue(message["id"]);
+});
