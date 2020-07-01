@@ -28,7 +28,8 @@ const scopes = [
     'streaming',
     'user-read-email',
     'user-read-private',
-    'user-modify-playback-state'
+    'user-modify-playback-state',
+    'user-read-currently-playing'
 ];
 
 // If there is no token, redirect to Spotify authorization
@@ -37,7 +38,7 @@ if (!_token) {
 }
 
 var id = '';
-var currentSong;
+var currentSongId;
 var searchResult;
 
 /**var nextSong = new EventSource("/songs");
@@ -107,6 +108,7 @@ function save(){
     }
 
     console.log(currentParametersJson);
+    getCurrentTrack();
 }
 
 function songHandler(){
@@ -143,10 +145,11 @@ function getCurrentTrack (){
     $.ajax({
     url: "https://api.spotify.com/v1/me/player/currently-playing",
     type: "GET",
-    data: "id",
     beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
             success: function(data) {
-                console.log(data)
+                console.log(data);
+                currentSongId = {"id": data.item.id};
+                console.log(currentSongId);
             }
     })
 }
