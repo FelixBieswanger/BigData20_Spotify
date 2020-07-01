@@ -106,9 +106,20 @@ function save(){
             }
         }
     }
+    //getCurrentTrack();
 
-    console.log(currentParametersJson);
-    getCurrentTrack();
+    $.ajax({
+        url: "http://localhost:6969/formdata",
+        type: "POST",
+        data: JSON.stringify(currentParametersJson),
+        success: function (msg) {
+            console.log(msg);
+            console.log("heY");
+        }
+    });
+
+    //console.log(currentParametersJson);
+    
 }
 
 function songHandler(){

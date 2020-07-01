@@ -1,5 +1,5 @@
 from kafka import KafkaConsumer, KafkaProducer
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request
 import json
 
 
@@ -9,12 +9,15 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-@app.route("/formdata")
+@app.route("/formdata", methods=["POST"])
 def producer():
     #form data to python dict
 
-    producer = KafkaProducer(bootstrap_servers="kafka:9092",
-                             value_serializer=lambda x: json.dumps(x).encode("ascii"))
+    #producer = KafkaProducer(bootstrap_servers="kafka:9092",value_serializer=lambda x: json.dumps(x).encode("ascii"))
+    data = request.form.to_dict()
+    keys = list(data.keys())[0]
+    message = json.loads(keys)
+    print(message)
 
     message1 = {
         "current_song":"id",
@@ -31,9 +34,9 @@ def producer():
         ]
     }
 
-    producer.send("current_song",data=message1)
-    producer.send("parameter", data=message2)
-
+    #producer.send("current_song",data=message1)
+    #producer.send("parameter", data=message2)
+    return "Hello"
 
 @app.route("/consumer")
 def consumer():
