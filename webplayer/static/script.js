@@ -1,8 +1,8 @@
 var isPlaying = false;
 var songPaused = false;
-var danceability
-var loudness
-var tempo
+var danceability;
+var loudness;
+var tempo;
 // Get the hash of the url
 const hash = window.location.hash
 .substring(1)
@@ -56,62 +56,58 @@ window.onSpotifyPlayerAPIReady = () => {
     });
 
 // Error handling
-player.addListener('initialization_error', ({ message }) => { console.error(message); });
-player.addListener('authentication_error', ({ message }) => { console.error(message); });
-player.addListener('account_error', ({ message }) => { console.error(message); });
-player.addListener('playback_error', ({ message }) => { console.error(message); });
+    player.addListener('initialization_error', ({ message }) => { console.error(message); });
+    player.addListener('authentication_error', ({ message }) => { console.error(message); });
+    player.addListener('account_error', ({ message }) => { console.error(message); });
+    player.addListener('playback_error', ({ message }) => { console.error(message); });
 
 
     // Playback status updates
-player.on('player_state_changed', state => {
-    console.log(state) //Standard SDK
-    $('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
-    $('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
-    $('#current-track-artist').text(state.track_window.current_track.artists[0].name);
-    $('#current-track-artist2').text(state.track_window.current_track.artists[1].name);
+    player.on('player_state_changed', state => {
+        console.log(state) //Standard SDK
+        $('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
+        $('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
+        $('#current-track-artist').text(state.track_window.current_track.artists[0].name);
+        $('#current-track-artist2').text(state.track_window.current_track.artists[1].name);
     });
 
     // Ready
-player.on('ready', data => {
-    console.log('Ready with Device ID', data.device_id);
-    id = data.device_id;	
+    player.on('ready', data => {
+        console.log('Ready with Device ID', data.device_id);
+        id = data.device_id;
     });
 
     // Connect to the player!
-player.connect();
+    player.connect();
 }
 
 var slider = document.getElementById("myRange");
 var output = document.getElementById("demo");
-output.innerHTML = slider.value; // Display the default slider value
-
-// Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
-output.innerHTML = this.value;
-}
 
 function save(){
+    loudness = document.getElementById("Loudness").value;
+    danceability = document.getElementById("Danceability").value
+    tempo = document.getElementById("Tempo").value
 
-    function show_value1(this.value);
-    function show_value2(this.value);
-    function show_value3(this.value);
-    document.getElementById("Loudness").value
-    document.getElementById("Danceability").value
-    document.getElementById("Tempo").value
-
+    var currentParametersJson = {"parameters":
+        {
+            "danceability":{
+                "alpha": danceability,
+                "weight": 2
+            },
+            "loudness":{
+                "alpha": loudness,
+                "weight": 2
+            },
+            "tempo":{
+                "alpha": tempo,
+                "weight": 2
+            }
+        }
     }
 
-     function show_value1(this.value){
-         loudness.value = this.value
-     }
-
-     function show_value2(this.value){
-         danceability.value = this.value
-     }
-
-     function show_value3(this.value){
-         tempo.value = this.value
-     }
+    console.log(currentParametersJson);
+}
 
 function songHandler(){
     if(isPlaying){
@@ -153,21 +149,18 @@ function getCurrentTrack (){
                 console.log(data)
             }
     })
-
+}
 //Wert der Slider anzeigen
-function show_value1(x)
-{
- document.getElementById("slider_value1").innerHTML=x;
+function show_value1(x){
+    document.getElementById("slider_value1").innerHTML=x;
 }
 
-function show_value2(x)
-{
- document.getElementById("slider_value2").innerHTML=x;
+function show_value2(x){
+    document.getElementById("slider_value2").innerHTML=x;
 }
 
-function show_value2(x)
-{
- document.getElementById("slider_value3").innerHTML=x;
+function show_value3(x){
+    document.getElementById("slider_value3").innerHTML=x;
 }
 
 
@@ -302,13 +295,3 @@ function changeIcon(){
     $(".playpause").toggleClass("fa-pause-circle")
     $(".playpause").toggleClass("fa-play-circle")
 }
-
-var source = new EventSource("/consumer");
-
-source.addEventListener("message", function (e) {
-
-    //JS Davids Recommandation
-    message = JSON.parse(e.data);
-
-});
-
