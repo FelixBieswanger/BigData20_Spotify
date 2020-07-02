@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css?family=Butterfly+Kids%7CRoboto%27');
+
+#contents {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: stretch;
+    width: 100%;
+    margin-top: 10vh;
+}
+
+#header {
+    text-align: center;
+}
+
+#footer {
+    text-align: center;
+    align-content: center;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+#search {
+    flex-basis: 30%;
+    position: flex;
+    align-items: stretch;
+}
+
+#parameter {
+    text-align: center;
+    float: right;
+    flex-basis: 30%;
+    position: flex;
+    align-items: stretch;
+}
+
+#webplayer {
+    text-align: center;
+    flex-basis: %;
+    position: flex;
+    align-items: stretch;
+}
+
+.songnavigation {
+    border: none;
+    color: lightgrey;
+    background-color: transparent;
+}
+
+.playpause {
+    font-size: 48pt;
+    line-height: normal;
+}
+
+.playpause:hover {
+    color: white;
+    font-size: 49pt;
+}
+
+#playbox{
+    width:80px;
+    height:80px;
+    line-height:80px;
+    text-align:center;
+    vertical-align:middle;
+    display:inline-block;
+}
+
+.fa-play-circle { 
+    line-height: inherit;
+}
+
+.fa-pause-circle {
+    line-height: inherit;
+}
+
+.skipprevious {
+    font-size: 24pt;
+    padding: 0px 5px 0px 5px;
+    text-align:center;
+    vertical-align:middle;
+    display:inline-block;
+}
+
+.skipprevious:hover {
+    color: white;
+}
+
+#songbuttons {
+    display: inline-grid;
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+body {
+    background-color: #292929;
+    font-family: 'Roboto', sans-serif;
+    color: lightgray;
+}
+
+
+#slidecontainer {
+  width: 100%; /* Width of the outside container */
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+

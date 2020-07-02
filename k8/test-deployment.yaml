@@ -29,7 +29,7 @@ spec:
       volumes: null
       containers:
       - name: test
-        image: spotifycontainerregistry.azurecr.io/test
+        image: hdmspotifyacr.azurecr.io/test
         imagePullPolicy: ""
         ports:
         - containerPort: 6969

@@ -86,7 +86,6 @@ for analysis in response_audioanalysis["audio_features"]:
     try:
         producer.send("createTrack", value=track)
         producer.flush()
-        print("sent")
     except Exception as e:
         print(e)
 

@@ -4,15 +4,6 @@ import json
 
 app = Flask(__name__)
 
-try:
-    producer = KafkaProducer(bootstrap_servers="kafka:9092",
-                            value_serializer=lambda x: json.dumps(x).encode("ascii"))
-
-    producer.send("neo4j", value={"test":"test"})
-    producer.flush()
-except Exception as e:
-    print(e)
-
 @app.route("/")
 def index():
     return render_template("index.html")
