@@ -23,7 +23,7 @@ const authEndpoint = 'https://accounts.spotify.com/authorize';
 
 // Replace with your app's client ID, redirect URI and desired scopes
 const clientId = '37e56ecffd2e4712a07bfcf7ac4ec508'; //DashboardID
-const redirectUri = 'http://localhost:6969/'; //Whitelisted in Dashbaord
+const redirectUri = 'http://webplayer-service:6969/'; //Whitelisted in Dashbaord
 const scopes = [
     'streaming',
     'user-read-email',
