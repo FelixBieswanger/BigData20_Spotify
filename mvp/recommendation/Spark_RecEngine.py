@@ -75,7 +75,6 @@ track_list= [list(track.values())[0] for track in track_list]
 
 data_df= pd.DataFrame.from_dict(track_list)
 
-
             
 
         
@@ -122,7 +121,7 @@ userSchema_Song = StructType().add("current_song", "string", True) \
     
 data_current_song = spark.readStream \
             .format("kafka")\
-            .option("kafka.bootstrap.servers", "localhost:9092")\
+            .option("kafka.bootstrap.servers", "kafka:9092")\
             .option("subscribe", "current_song")\
             .load()                            
                 
@@ -143,7 +142,7 @@ userSchema_Parameters = StructType().add("parameter", "string") \
                         
 data_current_parameter = spark.readStream \
             .format("kafka")\
-            .option("kafka.bootstrap.servers", "localhost:9092")\
+            .option("kafka.bootstrap.servers", "kafka:9092")\
             .option("subscribe", "current_parameters")\
             .load()
                 
@@ -330,11 +329,11 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         data.selectExpr("id as value") \
             .write \
             .format("kafka") \
-            .option("kafka.bootstrap.servers", "localhost:9092") \
+            .option("kafka.bootstrap.servers", "kafka:9092") \
             .option("topic", "recommendations") \
             .save()
     
-<<<<<<< HEAD:mvp/Spark_RecEngine.py
+
     except Exception as e: 
         print("----")
         print(e)
@@ -344,28 +343,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
 stream_param = data_current_parameter.writeStream \
         .foreachBatch(foreach_batch_distance) \
         .start()
-  
-
-# --------------------------------------------------------------------------- #
-      
-=======
-    data = data.select(['id', 'scaledFeatures', 'distances']) \
-            .orderBy('distances', ascending= True) \
-            .where('id not "' + current_song_ID + '"') \
-            .take(5) \
-            
-                
-            
-    # --------------------------------------------------------------------------- #
-    #OUTPUT AN FRONTEND MIT KAFKA
-    # --------------------------------------------------------------------------- #      
-
-    data.write \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", "kafka:9092") \
-        .option("topic", "recommendations") \
-        .save()
->>>>>>> master:mvp/recommendation/Spark_RecEngine.py
+        
   
 stream_song.awaitTermination()
        
