@@ -13,6 +13,9 @@ variables:
   tag: '$(Build.BuildId)'
   imagePullSecret: 'hdmspotifyacrb572-auth'
 
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
 trigger:
   branches:
     include:
