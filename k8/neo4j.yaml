@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: neo4j
+  name: neo4j
+spec:
+  type: LoadBalancer 
+  ports:
+  - name: "7474"
+    port: 7474
+    targetPort: 7474
+  - name: "6477"
+    port: 6477
+    targetPort: 6477
+  - name: "bolt"
+    port: 7687
+    targetPort: 7687
+  - name: "kafka"
+    port: 9092
+    targetPort: 9092
+  - name: "zookeeper"
+    port: 2181
+    targetPort: 2181
+
+  selector:
+    io.kompose.service: neo4j
+status:
+  loadBalancer: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.21.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: neo4j
+  name: neo4j
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: neo4j
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.21.0 ()
+      creationTimestamp: null
+      labels:
+        io.kompose.network/kafka_cluster: "true"
+        io.kompose.service: neo4j
+    spec:
+      containers:
+      - name: neo4j
+        env:
+        - name: NEO4J_ACCEPT_LICENSE_AGREEMENT
+          value: "yes"
+        - name: NEO4J_AUTH
+          value: neo4j/streams
+        - name: NEO4J_dbms_connector_bolt_listen__address
+          value: :7687
+        - name: NEO4J_dbms_connector_http_listen__address
+          value: :7474
+        - name: NEO4J_dbms_connector_https_listen__address
+          value: :6477
+        - name: NEO4J_dbms_logs_debug_level
+          value: DEBUG
+        - name: NEO4J_kafka_auto_offset_reset
+          value: earliest
+        - name: NEO4J_kafka_bootstrap_servers
+          value: "kafka:9092"
+        - name: NEO4J_kafka_key_deserializer
+          value: org.apache.kafka.common.serialization.ByteArrayDeserializer
+        - name: NEO4J_kafka_value_deserializer
+          value: org.apache.kafka.common.serialization.ByteArrayDeserializer
+        - name: NEO4J_kafka_zookeeper_connect
+          value: "zookeeper-service:2181"
+        - name: NEO4J_streams_source_enabled
+          value: "true"
+        - name: NEO4J_streams_source_topic_nodes_neo4j
+          value: Track:Artist:Genre
+        - name: NEO4J_streams_sink_enabled_to_neo4j
+          value: "true"
+        - name: NEO4J_kafka_group_id
+          value: "neo4j"
+        - name: NEO4J_kafka_client_id 
+          value: "neo4j"
+        - name: NEO4J_streams_sink_topic_cypher_createArtistandRel_to_neo4j
+          value: "MATCH(t:Track {id: event.trackid}) MERGE (a:Artist {id: event.id, name: event.name, popularity:event.popularity, followers:event.followers, genres:event.genres}) MERGE (a)-[:produced]->(t)"
+        - name: NEO4J_streams_sink_topic_cypher_createGenre_to_neo4j
+          value: "MATCH (a:Artist {id:event.artistid}) MERGE (g:Genre {name:event.name})MERGE (a)-[:belongs_to]->(g)"
+        - name: NEO4J_streams_sink_topic_cypher_createTrack_to_neo4j
+          value: "MERGE (t:Track {id: event.id, name: event.name , duration_ms: event.duration_ms, explicit:event.explicit, artists:event.artists, danceability:event.danceability, energy:event.energy, key: event.key, loudness: event.loudness, mode: event.mode, speechiness: event.speechiness, acousticness: event.acousticness, instrumentalness: event.instrumentalness, liveness: event.liveness, valence: event.valence, tempo: event.tempo, time_signature: event.time_signature})"
+        image: hdmspotifyacr.azurecr.io/neo4j
+        imagePullPolicy: ""
+        ports:
+        - containerPort: 9092
+        - containerPort: 2181
+        - containerPort: 7474
+        - containerPort: 6477
+        - containerPort: 7687
+        resources:
+          requests:
+            cpu: 200m
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
+
