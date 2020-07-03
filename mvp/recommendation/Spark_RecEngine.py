@@ -155,8 +155,6 @@ data_current_parameter = spark.readStream \
             .option("kafka.bootstrap.servers", "kafka:9092")\
             .option("subscribe", "current_Parameters")\
             .load()
-                
-data_current_parameter.show()             
             
 data_current_parameter = data_current_parameter.selectExpr("CAST(value AS STRING)")
 
