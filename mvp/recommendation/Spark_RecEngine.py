@@ -101,6 +101,12 @@ driver.close()
   
 distance_list= [list(distance.values())[0] for distance in distance_list]
 
+print("--------------------")
+print(type(distance_list))
+print(type(distance_list[0]))print
+print("--------------------")
+
+
 distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
 distances= pd.DataFrame.from_dict(distances)
 
