@@ -154,7 +154,7 @@ userSchema_Parameters = StructType().add("parameter", "string") \
 data_current_parameter = spark.readStream \
             .format("kafka")\
             .option("kafka.bootstrap.servers", "kafka:9092")\
-            .option("subscribe", "current_parameters")\
+            .option("subscribe", "current_Parameters")\
             .load()
                 
 data_current_parameter = data_current_parameter.selectExpr("CAST(value AS STRING)")
