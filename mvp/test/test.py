@@ -1,37 +1,20 @@
 from kafka import KafkaConsumer, KafkaProducer
-from flask import Flask, render_template, Response
 import json
 
-app = Flask(__name__)
+producer = KafkaProducer(bootstrap_servers="kafka:9092",
+                         value_serializer=lambda x: json.dumps(x).encode("ascii"))
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+messages = [
+    {"parameter": "danceability", "alpha": 1, "weight": 1},
+    {"parameter": "loudness", "alpha": 1, "weight": 2},
+    {"parameter": "tempo", "alpha": -1, "weight": 1},
+    {"parameter": "distance", "alpha": 1, "weight": 2}
+]
 
-@app.route("/songs")
-def songs():
-    consumer = KafkaConsumer("createTrack", bootstrap_servers="kafka:9092",value_deserializer=lambda x: json.loads(x.decode('utf-8')),auto_offset_reset="earliest")
+try:
+    for m in messages:
+        producer.send("current_Parameters", m)
 
-    #Using Yield create an Generator
-    def events():
-        for message in consumer:
-            yield 'data:{0}\n\n'.format(message.value)
-
-    #Mimetype: Event-Stream takes an Generator
-    return Response(events(), mimetype="text/event-stream")
-
-
-@app.route("/neo4j")
-def neo4jtest():
-    consumer = KafkaConsumer("neo4j", bootstrap_servers="kafka:9092", value_deserializer=lambda x: json.loads(x.decode('utf-8')), auto_offset_reset="earliest")
-
-    #Using Yield create an Generator
-    def events():
-        for message in consumer:
-            yield 'data:{0}\n\n'.format(message.value)
-
-    #Mimetype: Event-Stream takes an Generator
-    return Response(events(), mimetype="text/event-stream")
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True, port=6969)
+    producer.flush()
+except Exception as e:
+    print(e)

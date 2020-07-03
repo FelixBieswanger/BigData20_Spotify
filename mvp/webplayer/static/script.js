@@ -23,7 +23,8 @@ const authEndpoint = 'https://accounts.spotify.com/authorize';
 
 // Replace with your app's client ID, redirect URI and desired scopes
 const clientId = '37e56ecffd2e4712a07bfcf7ac4ec508'; //DashboardID
-const redirectUri = 'http://localhost:6969/'; //Whitelisted in Dashbaord
+const redirectUri = 'http://40.124.89.82:6969/'; //Whitelisted in Dashbaord
+//const redirectUri = 'http://localhost:6969/'; //Whitelisted in Dashbaord
 const scopes = [
     'streaming',
     'user-read-email',
@@ -49,10 +50,14 @@ nextSong.addEventListener("message", function(songid){
 });**/
 // Set up the Web Playback SDK
 
-window.onSpotifyPlayerAPIReady = () => {
+/** */
+//window.onSpotifyPlayerAPIReady = () => {
+window.onSpotifyWebPlaybackSDKReady = () => {
+    console.log(_token)
     const player = new Spotify.Player({
     name: 'Live DJ Session',
-    getOAuthToken: cb => { cb(_token); },
+    //getOAuthToken: cb => { cb(_token); },
+    getOAuthToken: callback => { callback(_token);},
     volume: 0.5
     });
 
