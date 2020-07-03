@@ -58,6 +58,7 @@ spark= SparkSession(sc) \
 Input: Initiales Laden der Tracks und zugehörigen Features aus Neo4J
 ''' 
 
+#uri = "bolt://40.80.208.184:7687"
 uri = "bolt://neo4j:7687/db/data"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"), encrypted=False)
 
