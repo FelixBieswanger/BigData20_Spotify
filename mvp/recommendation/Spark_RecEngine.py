@@ -27,6 +27,7 @@ from pyspark.sql.types import FloatType
 import pyspark.sql.functions as F
 from scipy.spatial import distance
 from neo4j import GraphDatabase
+from neo4j.graph import *
 from pyspark.sql.functions import from_json,to_json,struct,col, mean as _mean, lit, first
 
 import os
@@ -64,7 +65,7 @@ track_list= [list(track.values())[0] for track in track_list]
 data_df= pd.DataFrame.from_dict(track_list)
 
 print("-------------")
-data_df.sample(10)
+print(data_df.sample(10))
 print("-------------")
 
             
@@ -98,8 +99,11 @@ print(type(distance_list[0]))
 print("--------------------")
 
 
-distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
+#distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
+distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), len(graphpath)] for graph-path in distance_list]
+print(distances)
 distances= pd.DataFrame.from_dict(distances)
+
 
 
 
