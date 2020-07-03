@@ -34,19 +34,6 @@ os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming
 
 
 
-'''
-Anlegen des Spark Projektes
-''' 
-
-sc = SparkContext("local[2]", "EuclideanDistanceOnSteroids") #1.Spark, Mesos, YARN URL or local, 2. appName-Parametr
-ssc = StreamingContext(sc, 10) #Spark-Context-Object, Interval 10 seconds
-spark= SparkSession(sc) \
-    .builder.appName("EuclideanDistanceOnSteroids")\
-    .master("local[4]")\
-    .getOrCreate()
-
-
-
 
 
 # --------------------------------------------------------------------------- #
@@ -75,6 +62,10 @@ with driver.session() as session:
 track_list= [list(track.values())[0] for track in track_list]
 
 data_df= pd.DataFrame.from_dict(track_list)
+
+print("-------------")
+data_df.sample(10)
+print("-------------")
 
             
 
@@ -118,6 +109,22 @@ distances= pd.DataFrame.from_dict(distances)
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
+
+
+
+'''
+Anlegen des Spark Projektes
+''' 
+
+sc = SparkContext("local[2]", "EuclideanDistanceOnSteroids") #1.Spark, Mesos, YARN URL or local, 2. appName-Parametr
+ssc = StreamingContext(sc, 10) #Spark-Context-Object, Interval 10 seconds
+spark= SparkSession(sc) \
+    .builder.appName("EuclideanDistanceOnSteroids")\
+    .master("local[4]")\
+    .getOrCreate()
+    
+    
+    
 
 '''
 Input: Current Song & current Parameters from Frontend
