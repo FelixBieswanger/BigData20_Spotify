@@ -92,7 +92,6 @@ distance_list= [list(distance.values())[0] for distance in distance_list]
 
 #distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
 distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), len(graphpath)] for graphpath in distance_list]
-print(distances)
 distances= pd.DataFrame.from_dict(distances)
 
 
@@ -201,6 +200,15 @@ stream_song = data_current_song.writeStream \
 # --------------------------------------------------------------------------- #
 
 def foreach_batch_distance(current_Parameters, epoch_id):    
+    print("-----------------")
+    print("-----------------")
+    print("-----------------")
+    print("hi")
+    print("-----------------")
+    print("-----------------")
+    
+    print(current_Parameters)
+    
     try:           
         #Get global variables
         global data_df
