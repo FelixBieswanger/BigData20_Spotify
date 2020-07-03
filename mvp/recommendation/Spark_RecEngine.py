@@ -27,7 +27,7 @@ from pyspark.sql.types import FloatType
 import pyspark.sql.functions as F
 from scipy.spatial import distance
 from neo4j import GraphDatabase
-from neo4j.graph import *
+# from neo4j.graph import *
 from pyspark.sql.functions import from_json,to_json,struct,col, mean as _mean, lit, first
 
 import os
