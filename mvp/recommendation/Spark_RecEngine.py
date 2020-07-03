@@ -103,7 +103,7 @@ distance_list= [list(distance.values())[0] for distance in distance_list]
 
 print("--------------------")
 print(type(distance_list))
-print(type(distance_list[0]))print
+print(type(distance_list[0]))
 print("--------------------")
 
 
