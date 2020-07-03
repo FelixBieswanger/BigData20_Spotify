@@ -6,10 +6,10 @@ variables:
 
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'f44a91ad-de08-4b15-809c-dfe565afdc64'
-  imageRepository: 'artist'
+  imageRepository: 'recomendation'
   containerRegistry: 'hdmspotifyacr.azurecr.io'
   k8sPath: k8
-  dockerfilePath: '**/mvp/Dockerfile_artist'
+  dockerfilePath: '**/mvp/recommendation/Dockerfile'
   tag: '$(Build.BuildId)'
   imagePullSecret: 'hdmspotifyacrb572-auth'
 
@@ -22,7 +22,7 @@ trigger:
       - master
   paths:
     include:
-      - mvp/artists
+      - mvp/recommendation
       - k8
 
 resources:
@@ -80,7 +80,7 @@ stages:
             inputs:
               action: 'deploy'
               kubernetesServiceConnection: 'spotify-default'
-              manifests: '../manifests/artists.yaml'
+              manifests: '../manifests/recomendation.yaml'
               containers: '$(containerRegistry)/$(imageRepository):$(tag)'
               imagePullSecrets: '$(imagePullSecret)'
 
