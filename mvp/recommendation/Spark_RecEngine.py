@@ -100,7 +100,7 @@ print("--------------------")
 
 
 #distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
-distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), len(graphpath)] for graph-path in distance_list]
+distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), len(graphpath)] for graphpath in distance_list]
 print(distances)
 distances= pd.DataFrame.from_dict(distances)
 
