@@ -87,7 +87,7 @@ Distance_Query="""MATCH (n:Track) WITH collect(n) as nodes UNWIND nodes as n
 UNWIND nodes as m WITH * WHERE id(n) < id(m) 
 MATCH path = allShortestPaths( (n)-[*..]-(m) ) RETURN path"""
 
-driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"))
+driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"), encrypted=False)
 
 with driver.session() as session:
     nodes = session.run(Distance_Query)
