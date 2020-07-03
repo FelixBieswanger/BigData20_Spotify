@@ -51,7 +51,7 @@ nextSong.addEventListener("message", function(songid){
 
 window.onSpotifyPlayerAPIReady = () => {
     const player = new Spotify.Player({
-    name: 'Live DJ Session oder so',
+    name: 'Live DJ Session',
     getOAuthToken: cb => { cb(_token); },
     volume: 0.5
     });
@@ -68,14 +68,19 @@ window.onSpotifyPlayerAPIReady = () => {
         console.log(state) //Standard SDK
         
         //TO IMPLEMENT
-        sendnewTrackToTopic(songid)
+        sendNewTrackToTopic(state.track_window.current_track.id)
 
         $('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
         $('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
 
-
-        $('#current-track-artist').text(state.track_window.current_track.artists[0].name);
-        $('#current-track-artist2').text(state.track_window.current_track.artists[1].name);
+        var showArtists = '';
+        for(let i = 0; i <= state.track_window.current_track.artists.length-1; i++){
+            showArtists += state.track_window.current_track.artists[i].name;
+            if(i != state.track_window.current_track.artists.length-1){
+                showArtists += ", ";
+            }
+        }
+        $('#artists').text(showArtists);
     });
 
     // Ready
@@ -150,7 +155,7 @@ function getFeatures(){
     data:"danceability" + "loudness" + "tempo",
     beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
             success: function(data) {
-                console.log(data)
+                //console.log(data)
             }
     })
 
@@ -163,7 +168,6 @@ function getCurrentTrack (){
     type: "GET",
     beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
             success: function(data) {
-                console.log(data);
                 currentSongId = {"id": data.item.id};
                 console.log(currentSongId);
             }
@@ -185,14 +189,14 @@ function show_value3(x){
 
 // Play a track using our new device ID
 function play() {
-    var uri = 'spotify:track:0ed6evAMZvewGh4UI9KkVU", "spotify:track:0I67c6jPoBxVkUwo02bZnD';
+    var uri = 'spotify:track:2cGxRwrMyEAp8dEbuZaVv6", "spotify:track:0I67c6jPoBxVkUwo02bZnD';
     $.ajax({
         url: "https://api.spotify.com/v1/me/player/play?device_id=" + id,
         type: "PUT",
         data: '{"uris": ["' + uri + '"]}',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) { 
-            console.log(data)
+            console.log("play");
         }
     });
 }
@@ -203,7 +207,7 @@ function pause() {
         type: 'PUT',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+ _token );},
         success: function(data) {
-            console.log(data)
+            console.log("pause")
         }
     });
 }
@@ -214,7 +218,7 @@ function resume(){
         type: 'PUT',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) { 
-            console.log(data)
+            console.log("resume")
         }
     });
 }
@@ -225,7 +229,7 @@ function previous(){
         type: 'POST',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) {
-            console.log(data)
+            console.log("previous")
         }
     });
 }
@@ -236,7 +240,7 @@ function skip(){
         type: 'POST',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
             success: function(data) {
-                console.log(data)
+                console.log("skip")
             }
         });
 }
@@ -248,7 +252,7 @@ function addToQueue(songid){
         type: 'POST',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) {
-            console.log(data)
+            console.log("added song with id" + songid + "to the queue")
         }
     });
 }
@@ -304,7 +308,6 @@ function search(){
 //hier schleifendurchläufe an ergebnisse anpassen. beim api call evtl ergebnisse limitieren.
 function displayResults(result){
     var span = '#search-res-'
-    console.log(result)
     for(j = 0; j <= result.tracks.items.length-1; j++) {
         $(span.concat(j)).text(result.tracks.items[j].name + ' - ' + result.tracks.items[j].artists[0].name);
     }
@@ -328,8 +331,7 @@ source.addEventListener("message", function (e) {
 });
 
 
-function sendnewTrackToTopic(songid){
-
+function sendNewTrackToTopic(songid){
     data = {
         "currentSong":songid
     }
@@ -339,6 +341,8 @@ function sendnewTrackToTopic(songid){
         url: "/currentSong",
         type: "POST",
         data: JSON.stringify(data),
+        success: function(data) {
+            console.log("sent track to topic")
+        }
     });
-
 }
