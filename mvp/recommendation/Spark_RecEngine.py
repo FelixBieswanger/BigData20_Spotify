@@ -156,13 +156,15 @@ data_current_parameter = spark.readStream \
             .option("subscribe", "current_Parameters")\
             .load()
                 
+data_current_parameter.show()             
+            
 data_current_parameter = data_current_parameter.selectExpr("CAST(value AS STRING)")
 
 data_current_parameter = data_current_parameter \
             .withColumn("value", from_json("value", userSchema_Parameters)) \
             .select(col('value.*'))
     
-    
+
 
     
     
