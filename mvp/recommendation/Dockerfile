@@ -1,5 +1,5 @@
 #Base Image : Python
-FROM python:3.7
+FROM python:3.7.7
 
 #?
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
