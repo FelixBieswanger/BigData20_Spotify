@@ -64,10 +64,6 @@ track_list= [list(track.values())[0] for track in track_list]
 
 data_df= pd.DataFrame.from_dict(track_list)
 
-print("-------------")
-print(data_df.sample(10))
-print("-------------")
-
             
 
         
@@ -92,11 +88,6 @@ with driver.session() as session:
 driver.close()
   
 distance_list= [list(distance.values())[0] for distance in distance_list]
-
-print("--------------------")
-print(type(distance_list))
-print(type(distance_list[0]))
-print("--------------------")
 
 
 #distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
@@ -127,7 +118,7 @@ spark= SparkSession(sc) \
     .master("local[4]")\
     .getOrCreate()
     
-sc.setLogLevel("DEBUG")
+#sc.setLogLevel("DEBUG")
     
     
     
@@ -252,6 +243,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         
         sqlCtx = SQLContext(sc)
         data = sqlCtx.createDataFrame(data)
+        
+        data.show()
         
         
         #Parameter Subset
