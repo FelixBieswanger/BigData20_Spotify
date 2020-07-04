@@ -117,7 +117,7 @@ spark= SparkSession(sc) \
     .master("local[4]")\
     .getOrCreate()
     
-sc.setLogLevel("DEBUG")
+#sc.setLogLevel("DEBUG")
     
     
     
@@ -365,19 +365,19 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         
 test_stream= data_current_parameter.writeStream \
 
-consoleOutput = data_current_parameter.writeStream \
-      .outputMode("append") \
-      .format("console") \
-      .start()
+
       
 
     
         
 stream_param = data_current_parameter.writeStream \
         .foreachBatch(foreach_batch_distance) \
-        .trigger(processingTime='60 seconds')
-        
-            #.start()
+        .start()
+            
+consoleOutput = data_current_parameter.writeStream \
+      .outputMode("append") \
+      .format("console") \
+      .start()
         
 
 
