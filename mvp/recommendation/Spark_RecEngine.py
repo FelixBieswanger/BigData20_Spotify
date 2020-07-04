@@ -362,8 +362,6 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     pass
         
-        
-test_stream= data_current_parameter.writeStream \
 
 
       
