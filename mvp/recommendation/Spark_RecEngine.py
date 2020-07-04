@@ -358,7 +358,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     except Exception as e: 
         print("----")
         print(e)
-        print("Except in Current Parameters")  
+        print("Except in Current Parameters")
+    
+    pass
         
         
 test_stream= data_current_parameter.writeStream \
