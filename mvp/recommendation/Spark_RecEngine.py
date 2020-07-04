@@ -368,7 +368,7 @@ consoleOutput = data_current_parameter.writeStream \
       .format("console") \
       .start()
       
-consoleOutput.awaitTermination()
+
     
         
 stream_param = data_current_parameter.writeStream \
@@ -376,6 +376,9 @@ stream_param = data_current_parameter.writeStream \
         .trigger(Trigger.ProcessingTime("120 seconds")) \
         .start()
         
+
+
+consoleOutput.awaitTermination()
   
 stream_song.awaitTermination()
        
