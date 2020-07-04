@@ -359,10 +359,21 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         print("----")
         print(e)
         print("Except in Current Parameters")  
+        
+        
+test_stream= data_current_parameter.writeStream \
+
+consoleOutput = data_current_parameter.writeStream \
+      .outputMode("append")
+      .format("console")
+      .start()
+      
+consoleOutput.awaitTermination()
     
         
 stream_param = data_current_parameter.writeStream \
         .foreachBatch(foreach_batch_distance) \
+        .trigger(Trigger.ProcessingTime("120 seconds")) \
         .start()
         
   
