@@ -364,8 +364,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
 test_stream= data_current_parameter.writeStream \
 
 consoleOutput = data_current_parameter.writeStream \
-      .outputMode("append")
-      .format("console")
+      .outputMode("append") \
+      .format("console") \
       .start()
       
 consoleOutput.awaitTermination()
