@@ -13,13 +13,13 @@
 </head>
 <body>  
     <div id="header">
-        <h1>Spotify Live DJ Session</h1>
+        <img src="Logo.png" class="logo">
     </div>
     <div id="contents">
         <div id="search">
             <h4>Suche:</h4>
             <input id="searchbox" type="text">
-            <button onclick="search()">Gogo</button><br>
+            <button onclick="search()" class="button">Gogo</button><br>
             <span id="search-res-0"></span><br>
             <span id="search-res-1"></span><br>
             <span id="search-res-2"></span><br>
@@ -40,20 +40,20 @@
                 <span class="fas fa-step-forward songnavigation skipprevious" onclick="skip()"></span>
             </div>
             <br><br>
-            <button onclick="readJson()">message event</button>
+            <button onclick="readJson()" class="button">message event</button>
         </div>
         <div id="parameter">
             <div id="slidecontainer">
                 Loudness<br>
-                <span id="slider_value1" style="color:red;font-weight:bold;"></span><br>
-                <input type="range" min="-100" max="100" value="50" step="1" class="slider" id="Loudness" onchange="show_value1(this.value)"><br>
+                <span id="slider_value1" style="color:lightgrey;font-weight:bold;"></span><br>
+                <input type="range" min="-60" max="0" value="-30" step="0.001" class="slider" id="Loudness" onchange="show_value1(this.value)"><br><br>
                 Danceability<br>
-                <span id="slider_value2" style="color:red;font-weight:bold;"></span><br>
-                <input type="range" min="0" max="100" value="50" step="1" class="slider" id="Danceability" onchange="show_value2(this.value)"><br>
+                <span id="slider_value2" style="color:lightgrey;font-weight:bold;"></span><br>
+                <input type="range" min="0" max="1" value="0.5" step="0.001" class="slider" id="Danceability" onchange="show_value2(this.value)"><br><br>
                 Tempo<br>
-                <span id="slider_value3" style="color:red;font-weight:bold;"></span><br>
-                <input type="range" min="0" max="100" value="50" step="1" class="slider" id="Tempo" onchange="show_value3(this.value)"><br>
-                <button onclick="save()">Speichern</button>
+                <span id="slider_value3" style="color:lightgrey;font-weight:bold;"></span><br>
+                <input type="range" min="0" max="250" value="125" step="0.001" class="slider" id="Tempo" onchange="show_value3(this.value)"><br><br>
+                <button onclick="save()" class="button">Save</button>
         </div>
         </div>
     </div>
