@@ -117,7 +117,7 @@ spark= SparkSession(sc) \
     .master("local[4]")\
     .getOrCreate()
     
-#sc.setLogLevel("DEBUG")
+sc.setLogLevel("DEBUG")
     
     
     
