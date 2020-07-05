@@ -299,7 +299,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     
     data= data_df.copy()
-    
+    raise ValueError("---" + data.to_string())
     
     data= data.merge(distances, on='id', how='left')
     data['neo_distance']= data.neo_distance.fillna(100)  
@@ -322,9 +322,6 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     # raise ValueError('4')
         
  
-    '''
-    TODO: PARALLELIZE
-    '''
     #Enables Parallel Processing on Different Nodes
     #data = sc.parallelize(data)
         
@@ -369,7 +366,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                             .filter("id = '" + current_Song + "'") \
                             .collect()
                             
-    raise ValueError('Value Error' + ''.join(current_song_feature_vector)) 
+    #raise ValueError('Value Error' + ''.join(current_song_feature_vector)) 
+    #(current_features_"loudness"_MAreike_ist_cool_und'David'auch_ein"bisschen")
                                          
     p_list= list(current_song_feature_vector[0])        
 
