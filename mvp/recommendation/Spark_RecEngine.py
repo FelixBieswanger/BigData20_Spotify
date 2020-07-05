@@ -33,8 +33,53 @@ from pyspark.sql.functions import from_json,to_json,struct,col, mean as _mean, l
 import os
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5,org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.5 pyspark-shell'
 
+'''
+SPARK SUBMIT
+org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5,
+org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.5 
+
+WURSTMEISTER KAFKA
+kafka:2.11-2.0.0
+
+REUIREMENTS TXT
+pyspark==2.4.5,
+
+DOKU:        
+packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0
 
 
+=>
+                        kafka:      pyspark
+Spark Submit             
+Streaming kafka         0-8_2.11    :2.4.5
+SQL kafka               0-10_2.11   :2.4.5
+
+Wurstmeister Kafka
+kafka                   2.11-       2.0.0
+
+Requirements txt
+                                    :2.4.5
+  
+                            
+---------------------------------------------  
+    
+SOLL / Doku:
+SQL Kafka               0-10_2.12   :3.0.0
+                        0.11.0.0 or up
+
+---------------------------------------------         
+        
+Lokal:
+same
+same
+kafka                  1.4.7 
+pyspark                             2.4.5
+
+
+
+
+
+'''
 
 
 # --------------------------------------------------------------------------- #
@@ -200,165 +245,165 @@ stream_song = data_current_song.writeStream \
 # --------------------------------------------------------------------------- #
 
 def foreach_batch_distance(current_Parameters, epoch_id):    
-    print("-----------------")
-    print("-----------------")
-    print("-----------------")
+    # print("-----------------")
+    # print("-----------------")
+    # print("-----------------")
     print("hi")
-    print("-----------------")
-    print("-----------------")
+    # print("-----------------")
+    # print("-----------------")
     
-    print(current_Parameters)
+    # print(current_Parameters)
     
-    try:           
-        #Get global variables
-        global data_df
-        global distances
-        global current_Song
-        global data
+    # try:           
+    #Get global variables
+    global data_df
+    global distances
+    global current_Song
+    global data
+    
+    
+    a_list= current_Parameters.select("alpha").collect()
+    a_list= [row[0] for row in a_list]
+    
+    w_list= current_Parameters.select("weight").collect()
+    w_list= [row[0] for row in w_list]
+    
+    if len(a_list) is not 4 or len(w_list) is not 4:
+        print("Error")
+        raise ValueError('Alpha & Weight still empty')
         
-        
-        a_list= current_Parameters.select("alpha").collect()
-        a_list= [row[0] for row in a_list]
-        
-        w_list= current_Parameters.select("weight").collect()
-        w_list= [row[0] for row in w_list]
-        
-        if len(a_list) is not 4 or len(w_list) is not 4:
-            print("Error")
-            raise ValueError('Alpha & Weight still empty')
-            
-        
-        #Merge new distances
-        distances_left= distances.loc[distances.iloc[:,0]==current_Song]
-        distances_left= distances_left.iloc[:,[1, 2]]
-        distances_left= distances_left.rename(columns={1: "id", 2: "neo_distance"})
+    
+    #Merge new distances
+    distances_left= distances.loc[distances.iloc[:,0]==current_Song]
+    distances_left= distances_left.iloc[:,[1, 2]]
+    distances_left= distances_left.rename(columns={1: "id", 2: "neo_distance"})
 
 
-        distances_right= distances.loc[distances.iloc[:,1]==current_Song]
-        distances_right= distances_right.iloc[:,[0, 2]]
-        distances_right= distances_right.rename(columns={0: "id", 2: "neo_distance"})
+    distances_right= distances.loc[distances.iloc[:,1]==current_Song]
+    distances_right= distances_right.iloc[:,[0, 2]]
+    distances_right= distances_right.rename(columns={0: "id", 2: "neo_distance"})
 
+    
+    distances= distances_left.append(distances_right)
+    distances= distances.drop_duplicates()
+    
+    
+    data= data_df.copy()
+    
+    
+    data= data.merge(distances, on='id', how='left')
+    data['neo_distance']= data.neo_distance.fillna(100)  
+    
+    sqlCtx = SQLContext(sc)
+    data = sqlCtx.createDataFrame(data)
+    
+    data.show()
+    
+    
+    #Parameter Subset
+    data = data.select(["id", \
+                        "name", \
+                        "danceability", \
+                        "loudness", \
+                        "tempo", \
+                        "neo_distance"])
         
-        distances= distances_left.append(distances_right)
-        distances= distances.drop_duplicates()
-        
-        
-        data= data_df.copy()
-        
-        
-        data= data.merge(distances, on='id', how='left')
-        data['neo_distance']= data.neo_distance.fillna(100)  
-        
-        sqlCtx = SQLContext(sc)
-        data = sqlCtx.createDataFrame(data)
-        
-        data.show()
-        
-        
-        #Parameter Subset
-        data = data.select(["id", \
-                            "name", \
-                            "danceability", \
-                            "loudness", \
-                            "tempo", \
-                            "neo_distance"])
-            
  
-        '''
-        TODO: PARALLELIZE
-        '''
-        #Enables Parallel Processing on Different Nodes
-        #data = sc.parallelize(data)
+    '''
+    TODO: PARALLELIZE
+    '''
+    #Enables Parallel Processing on Different Nodes
+    #data = sc.parallelize(data)
+        
+        
+    # --------------------------------------------------------------------------- #
+    #PREPROCESSING
+    # --------------------------------------------------------------------------- #        
+    
+    
+    # Transform and write batchDF 
+    from pyspark.ml.feature import VectorAssembler
+    assembler = VectorAssembler() \
+                        .setInputCols(["danceability", "loudness", "tempo", "neo_distance"]) \
+                        .setOutputCol('features')
+                        
+    data = assembler.transform(data)
+
+      
+
+    #Normalization
+    from pyspark.ml.feature import MinMaxScaler
+    scaler = MinMaxScaler(inputCol="features", 
+                          outputCol="scaledFeatures")
+    
+    scalerModel = scaler.fit(data)
+    
+    data = scalerModel.transform(data)
+    
+    data = data.select(["id", \
+                        "name", \
+                        "scaledFeatures"])        
+        
+        
+    # --------------------------------------------------------------------------- #
+    #ENRICH WITH EUCLIDEAN DISTANCE ON STEROIDS
+    # --------------------------------------------------------------------------- #        
+
+    current_song_feature_vector= data \
+                            .select(["scaledFeatures"]) \
+                            .filter("id = '" + current_Song + "'") \
+                            .collect()[0]
+                                         
+    p_list= list(current_song_feature_vector[0])        
+
+    def euclDistance(q_list):
+        try:
+            distance= math.sqrt(sum( \
+                                    [a * w * ((q - p) ** 2) + w * (1 if a==(-1) else 0) \
+                                    for a, w, p, q  \
+                                    in zip(a_list, w_list, p_list, q_list)]))
+                
+        except: 
+            print("Except block!")
+            distance= 0
             
+        return distance
+
+    euclDistanceUDF = F.udf(euclDistance, FloatType())      
+    
+    data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
+    
+    data = data.select(['id']) \
+            .orderBy('distances', ascending= True) \
             
-        # --------------------------------------------------------------------------- #
-        #PREPROCESSING
-        # --------------------------------------------------------------------------- #        
-        
-        
-        # Transform and write batchDF 
-        from pyspark.ml.feature import VectorAssembler
-        assembler = VectorAssembler() \
-                            .setInputCols(["danceability", "loudness", "tempo", "neo_distance"]) \
-                            .setOutputCol('features')
-                            
-        data = assembler.transform(data)
-    
-          
-    
-        #Normalization
-        from pyspark.ml.feature import MinMaxScaler
-        scaler = MinMaxScaler(inputCol="features", 
-                              outputCol="scaledFeatures")
-        
-        scalerModel = scaler.fit(data)
-        
-        data = scalerModel.transform(data)
-        
-        data = data.select(["id", \
-                            "name", \
-                            "scaledFeatures"])        
+            #.collect()
             
+            #TODO: FILTER CURRENT SONG
+            #.where('id not "' + current_Song + '"') \
             
-        # --------------------------------------------------------------------------- #
-        #ENRICH WITH EUCLIDEAN DISTANCE ON STEROIDS
-        # --------------------------------------------------------------------------- #        
+    #recommendations= [id[0] for id in data]
+    # json_recommendations= {"songs": recommendations}
+    # message = json.dumps(coords).encode("ascii")
     
-        current_song_feature_vector= data \
-                                .select(["scaledFeatures"]) \
-                                .filter("id = '" + current_Song + "'") \
-                                .collect()[0]
-                                             
-        p_list= list(current_song_feature_vector[0])        
     
-        def euclDistance(q_list):
-            try:
-                distance= math.sqrt(sum( \
-                                        [a * w * ((q - p) ** 2) + w * (1 if a==(-1) else 0) \
-                                        for a, w, p, q  \
-                                        in zip(a_list, w_list, p_list, q_list)]))
-                    
-            except: 
-                print("Except block!")
-                distance= 0
-                
-            return distance
-    
-        euclDistanceUDF = F.udf(euclDistance, FloatType())      
-        
-        data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
-        
-        data = data.select(['id']) \
-                .orderBy('distances', ascending= True) \
-                
-                #.collect()
-                
-                #TODO: FILTER CURRENT SONG
-                #.where('id not "' + current_Song + '"') \
-                
-        #recommendations= [id[0] for id in data]
-        # json_recommendations= {"songs": recommendations}
-        # message = json.dumps(coords).encode("ascii")
-        
-        
-        data.show()                            
-                
-        # # --------------------------------------------------------------------------- #
-        # #OUTPUT AN FRONTEND MIT KAFKA
-        # # --------------------------------------------------------------------------- #      
-    
-        data.selectExpr("id as value") \
-            .write \
-            .format("kafka") \
-            .option("kafka.bootstrap.servers", "kafka:9092") \
-            .option("topic", "recommendations") \
-            .save()
+    data.show()                            
+            
+    # # --------------------------------------------------------------------------- #
+    # #OUTPUT AN FRONTEND MIT KAFKA
+    # # --------------------------------------------------------------------------- #      
+
+    data.selectExpr("id as value") \
+        .write \
+        .format("kafka") \
+        .option("kafka.bootstrap.servers", "kafka:9092") \
+        .option("topic", "recommendations") \
+        .save()
     
 
-    except Exception as e: 
-        print("----")
-        print(e)
-        print("Except in Current Parameters")
+    # except Exception as e: 
+    #     print("----")
+    #     print(e)
+    #     print("Except in Current Parameters")
     
     pass
         
@@ -371,6 +416,16 @@ def foreach_batch_distance(current_Parameters, epoch_id):
 stream_param = data_current_parameter.writeStream \
         .foreachBatch(foreach_batch_distance) \
         .start()
+        
+        
+        
+def process_row(df, epoch_id):
+    print("we lit")
+    pass
+
+stream_param2 = data_current_parameter.writeStream.foreachBatch(process_row).start()
+        
+        
             
 consoleOutput = data_current_parameter.writeStream \
       .outputMode("append") \
@@ -384,6 +439,8 @@ consoleOutput.awaitTermination()
 stream_song.awaitTermination()
        
 stream_param.awaitTermination()
+
+stream_param2.awaitTermination()
             
 
 
