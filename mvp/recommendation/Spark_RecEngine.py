@@ -394,10 +394,11 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                                          
     p_list= list(current_song_feature_vector[0])    
 
-    raise ValueError('p' + str(p_list) + 'a' + str(a_list) + 'w' +  str(w_list)) 
+    #raise ValueError('p' + str(p_list) + 'a' + str(a_list) + 'w' +  str(w_list)) 
 
     def euclDistance(q_list):
         try:
+            raise ValueError('Rows' + str(q_list))
             distance= math.sqrt(sum( \
                                     [a * w * ((q - p) ** 2) + w * (1 if a==(-1) else 0) \
                                     for a, w, p, q  \
