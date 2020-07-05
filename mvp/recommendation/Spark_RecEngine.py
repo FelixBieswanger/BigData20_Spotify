@@ -443,11 +443,11 @@ out_test = spark.readStream \
             .option("subscribe", "recommendations")\
             .load()                            
                 
-out_test = out_test.selectExpr("CAST(value AS STRING)")
+# out_test = out_test.selectExpr("CAST(value AS STRING)")
 
-out_test = out_test \
-            .withColumn("value", from_json("value", userSchema_out)) \
-            .select(col('value.*')) \     
+# out_test = out_test \
+#             .withColumn("value", from_json("value", userSchema_out)) \
+#             .select(col('value.*')) \
 
       
 out_test = out_test.writeStream \
