@@ -139,7 +139,7 @@ distance_list= [list(distance.values())[0] for distance in distance_list]
 distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), len(graphpath)] for graphpath in distance_list]
 distances= pd.DataFrame.from_dict(distances)
 
-
+print(distances)
 
 
 
