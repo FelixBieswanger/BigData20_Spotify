@@ -276,7 +276,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         #hier also stattdessen liste anders befüllen
         
         a_list= [1, 1, -1, 1]
-        w_list= [1, 2, 1, 1]
+        w_list= [1, 1, 1, 1]
         
 
         # raise ValueError('Alpha & Weight still empty')
@@ -433,8 +433,12 @@ def foreach_batch_distance(current_Parameters, epoch_id):
 
     #raise ValueError('Wir haben es eigentlich geschafft')
     
-    raise ValueError('Rowslalall' + str(data.collect()))
+    #raise ValueError('Rowslalall' + str(data.collect()))
         
+    
+    '''
+    Vllt doch in json converten?
+    '''
 
     data.selectExpr("id as value") \
         .write \
@@ -488,12 +492,15 @@ out_test = spark.readStream \
             .option("kafka.bootstrap.servers", "kafka:9092")\
             .option("subscribe", "recommendations")\
             .load()                            
-                
-out_test = out_test.selectExpr("CAST(value AS STRING)")
+         
+'''
+Oder hier nicht als json converten
+'''
+# out_test = out_test.selectExpr("CAST(value AS STRING)")
 
-out_test = out_test \
-            .withColumn("value", from_json("value", userSchema_out)) \
-            .select(col('value.*')) \
+# out_test = out_test \
+#             .withColumn("value", from_json("value", userSchema_out)) \
+#             .select(col('value.*')) \
 
       
 out_test = out_test.writeStream \
