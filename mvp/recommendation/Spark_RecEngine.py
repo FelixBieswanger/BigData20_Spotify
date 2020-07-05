@@ -369,7 +369,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                             .filter("id = '" + current_Song + "'") \
                             .collect()
                             
-    raise ValueError('Value Error' + type(current_song_feature_vector) + current_song_feature_vector) 
+    raise ValueError('Value Error' + str(type(current_song_feature_vector))) 
                                          
     p_list= list(current_song_feature_vector[0])        
 
