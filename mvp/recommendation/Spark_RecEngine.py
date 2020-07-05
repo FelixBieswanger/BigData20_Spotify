@@ -33,53 +33,48 @@ from pyspark.sql.functions import from_json,to_json,struct,col, mean as _mean, l
 import os
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5,org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.5 pyspark-shell'
 
-'''
-SPARK SUBMIT
-org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5,
-org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.5 
-
-WURSTMEISTER KAFKA
-kafka:2.11-2.0.0
-
-REUIREMENTS TXT
-pyspark==2.4.5,
-
-DOKU:        
-packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0
 
 
-=>
-                        kafka:      pyspark
-Spark Submit             
-Streaming kafka         0-8_2.11    :2.4.5
-SQL kafka               0-10_2.11   :2.4.5
+# SPARK SUBMIT
+# org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5,
+# org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.5 
 
-Wurstmeister Kafka
-kafka                   2.11-       2.0.0
+# WURSTMEISTER KAFKA
+# kafka:2.11-2.0.0
 
-Requirements txt
-                                    :2.4.5
+# REUIREMENTS TXT
+# pyspark==2.4.5,
+
+# DOKU:        
+# packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0
+
+
+# =>
+#                         kafka:      pyspark
+# Spark Submit             
+# Streaming kafka         0-8_2.11    :2.4.5
+# SQL kafka               0-10_2.11   :2.4.5
+
+# Wurstmeister Kafka
+# kafka                   2.11-       2.0.0
+
+# Requirements txt
+#                                     :2.4.5
   
                             
----------------------------------------------  
+# ---------------------------------------------  
     
-SOLL / Doku:
-SQL Kafka               0-10_2.12   :3.0.0
-                        0.11.0.0 or up
+# SOLL / Doku:
+# SQL Kafka               0-10_2.12   :3.0.0
+#                         0.11.0.0 or up
 
----------------------------------------------         
+# ---------------------------------------------         
         
-Lokal:
-same
-same
-kafka                  1.4.7 
-pyspark                             2.4.5
-
-
-
-
-
-'''
+# Lokal:
+# same
+# same
+# kafka                  1.4.7 
+# pyspark                             2.4.5
 
 
 # --------------------------------------------------------------------------- #
@@ -108,6 +103,8 @@ with driver.session() as session:
 track_list= [list(track.values())[0] for track in track_list]
 
 data_df= pd.DataFrame.from_dict(track_list)
+
+data_df.sample(10)
 
             
 
@@ -139,7 +136,9 @@ distance_list= [list(distance.values())[0] for distance in distance_list]
 distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), len(graphpath)] for graphpath in distance_list]
 distances= pd.DataFrame.from_dict(distances)
 
-print(distances)
+
+print("------")
+distances.sample(10)
 
 
 
