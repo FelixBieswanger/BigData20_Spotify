@@ -220,7 +220,10 @@ Transformation & Output: Standardisieren und Enrichment mit EuclideanDistance au
 '''
 
 #Initialer erster Song?
-current_Song= '04DwTuZ2VBdJCCC5TROn7L'
+
+#MAKE SURE, THAT CURRENT SONG IS IN NEO4J
+
+current_Song= '7GJClzimvMSghjcrKxuf1M'
 
 def foreach_batch_distance(current_Song_ID, epoch_id):  
     global current_Song
@@ -373,7 +376,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         
     # raise ValueError('6') 
     
-    raise ValueError('Rows' + str(data.collect()))
+    #raise ValueError('Rows' + str(data.collect()))
         
         
     # --------------------------------------------------------------------------- #
@@ -381,10 +384,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     # --------------------------------------------------------------------------- #        
 
     current_song_feature_vector= data \
-                            .select(["scaledFeatures"]) \
+                            .select("scaledFeatures") \
                             .filter("id = '" + current_Song + "'") \
-                            .collect()
-                            #eig wieder mit [0]
+                            .collect()[0]
                             
     #raise ValueError('Rows' + str(current_song_feature_vector))
                             
