@@ -367,7 +367,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     current_song_feature_vector= data \
                             .select(["scaledFeatures"]) \
                             .filter("id = '" + current_Song + "'") \
-                            .collect()[0]
+                            .collect()
                                          
     p_list= list(current_song_feature_vector[0])        
 
