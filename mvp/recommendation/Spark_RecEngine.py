@@ -295,8 +295,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     distances_right= distances_right.rename(columns={0: "id", 2: "neo_distance"})
 
     
-    distances= distances_left.append(distances_right)
-    distances= distances.drop_duplicates()
+    distances_merge= distances_left.append(distances_right)
+    distances_merge= distances_merge.drop_duplicates()
     
     # raise ValueError('3')
     
@@ -304,7 +304,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data= data_df.copy()
     #raise ValueError("---" + data.to_string())
     
-    data= data.merge(distances, on='id', how='left')
+    data= data.merge(distances_merge, on='id', how='left')
     data['neo_distance']= data.neo_distance.fillna(100)  
     
     sqlCtx = SQLContext(sc)
@@ -392,7 +392,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                             
     #raise ValueError('Value Error' + ''.join(current_song_feature_vector)) 
                                          
-    p_list= list(current_song_feature_vector[0])        
+    p_list= list(current_song_feature_vector[0])    
+
+    raise ValueError('p' + str(p_list) + 'a' + str(a_list) + 'w' +  str(w_list)+ 'q' + str(q_list) + str(current_song_feature_vector)) 
 
     def euclDistance(q_list):
         try:
