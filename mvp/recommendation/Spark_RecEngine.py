@@ -268,6 +268,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     w_list= current_Parameters.select("weight").collect()
     w_list= [row[0] for row in w_list]
     
+    raise ValueError('0')
+    
     if len(a_list) is not 4 or len(w_list) is not 4:
         print("Error")
         raise ValueError('Alpha & Weight still empty')
