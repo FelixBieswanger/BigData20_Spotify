@@ -396,9 +396,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
 
     #raise ValueError('p' + str(p_list) + 'a' + str(a_list) + 'w' +  str(w_list)) 
 
-    def euclDistance(q_list):
-        raise ValueError('Rows' + str(q_list))
-        
+    def euclDistance(q_list):        
         try:
             distance= math.sqrt(sum( \
                                     [a * w * ((q - p) ** 2) + w * (1 if a==(-1) else 0) \
@@ -409,11 +407,14 @@ def foreach_batch_distance(current_Parameters, epoch_id):
             print("Except block!")
             distance= 0
             
-        return distance
+        finally:   
+            return distance
 
     euclDistanceUDF = F.udf(euclDistance, FloatType())      
     
     data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
+    
+    raise ValueError('Rowslalall' + str(data.collect()))
     
     data = data.select(['id']) \
             .orderBy('distances', ascending= True) \
