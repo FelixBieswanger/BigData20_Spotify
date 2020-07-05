@@ -418,7 +418,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data = data.select('id') \
             .orderBy('distances', ascending= True) \
                 
-    raise ValueError('Rowslalall' + str(data.collect()))
+
             
     
             #.collect()
