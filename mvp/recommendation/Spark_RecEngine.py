@@ -366,7 +366,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         "name", \
                         "scaledFeatures"])   
         
-    raise ValueError('Rows' + str(data.count()))
+    raise ValueError('Rows' + str(data.collect()))
         
     if data.count() == 0:
         raise ValueError('Stage 5')
