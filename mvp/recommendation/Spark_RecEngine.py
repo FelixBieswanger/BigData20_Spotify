@@ -268,11 +268,16 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     w_list= current_Parameters.select("weight").collect()
     w_list= [row[0] for row in w_list]
     
-    raise ValueError('0')
     
     if len(a_list) is not 4 or len(w_list) is not 4:
-        print("Error")
-        raise ValueError('Alpha & Weight still empty')
+        #nur einmalig ausgeführt
+        #hier also stattdessen liste anders befüllen
+        
+        a_list= [1, 1, -1, 1]
+        w_list= [1, 2, 1, 1]
+        
+
+        # raise ValueError('Alpha & Weight still empty')
         
     
     #Merge new distances
@@ -280,7 +285,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     distances_left= distances_left.iloc[:,[1, 2]]
     distances_left= distances_left.rename(columns={1: "id", 2: "neo_distance"})
     
-    raise ValueError('1')
+    # raise ValueError('1')
 
 
     distances_right= distances.loc[distances.iloc[:,1]==current_Song]
@@ -291,7 +296,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     distances= distances_left.append(distances_right)
     distances= distances.drop_duplicates()
     
-    raise ValueError('3')
+    # raise ValueError('3')
     
     
     data= data_df.copy()
@@ -305,7 +310,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data.show()
     
-    raise ValueError('2')
+    # raise ValueError('2')
     
     #Parameter Subset
     data = data.select(["id", \
@@ -315,7 +320,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         "tempo", \
                         "neo_distance"])
         
-    raise ValueError('4')
+    # raise ValueError('4')
         
  
     '''
@@ -338,7 +343,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         
     data = assembler.transform(data)
 
-    raise ValueError('5')     
+    # raise ValueError('5')     
 
     #Normalization
     from pyspark.ml.feature import MinMaxScaler
@@ -353,7 +358,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         "name", \
                         "scaledFeatures"])   
         
-    raise ValueError('6') 
+    # raise ValueError('6') 
         
         
     # --------------------------------------------------------------------------- #
@@ -399,13 +404,13 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data.show()  
 
-    raise ValueError('6')                           
+    # raise ValueError('6')                           
             
     # # --------------------------------------------------------------------------- #
     # #OUTPUT AN FRONTEND MIT KAFKA
     # # --------------------------------------------------------------------------- #  
 
-    raise ValueError('Wir haben es eigentlich geschafft')
+    #raise ValueError('Wir haben es eigentlich geschafft')
         
 
     data.selectExpr("id as value") \
@@ -421,7 +426,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     #     print(e)
     #     print("Except in Current Parameters")
     
-    raise ValueError('7') 
+    # raise ValueError('7') 
     
     pass
         
