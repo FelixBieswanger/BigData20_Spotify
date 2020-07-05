@@ -431,6 +431,35 @@ consoleOutput = data_current_parameter.writeStream \
       .outputMode("append") \
       .format("console") \
       .start()
+      
+############   
+   
+
+userSchema_out = StructType().add("value", "string", True) \
+    
+out_test = spark.readStream \
+            .format("kafka")\
+            .option("kafka.bootstrap.servers", "kafka:9092")\
+            .option("subscribe", "recommendations")\
+            .load()                            
+                
+out_test = out_test.selectExpr("CAST(value AS STRING)")
+
+out_test = out_test \
+            .withColumn("value", from_json("value", userSchema_out)) \
+            .select(col('value.*')) \     
+
+      
+out_test = out_test.writeStream \
+      .outputMode("append") \
+      .format("console") \
+      .start()
+      
+############   
+   
+      
+      
+      
         
 
 
@@ -442,6 +471,6 @@ stream_param.awaitTermination()
 
 stream_param2.awaitTermination()
             
-
+out_test.awaitTermination()
 
 
