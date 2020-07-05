@@ -299,7 +299,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     
     data= data_df.copy()
-    raise ValueError("---" + data.to_string())
+    #raise ValueError("---" + data.to_string())
     
     data= data.merge(distances, on='id', how='left')
     data['neo_distance']= data.neo_distance.fillna(100)  
@@ -307,7 +307,10 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     sqlCtx = SQLContext(sc)
     data = sqlCtx.createDataFrame(data)
     
-    data.show()
+    if data.count() == 0:
+        raise ValueError('Stage 1')
+    
+    #data.show()
     
     # raise ValueError('2')
     
@@ -318,6 +321,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         "loudness", \
                         "tempo", \
                         "neo_distance"])
+        
+    if data.count() == 0:
+        raise ValueError('Stage 2')
         
     # raise ValueError('4')
         
@@ -338,6 +344,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         .setOutputCol('features')
                         
     data = assembler.transform(data)
+    
+    if data.count() == 0:
+        raise ValueError('Stage 3')
 
     # raise ValueError('5')     
 
@@ -348,11 +357,17 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     scalerModel = scaler.fit(data)
     
+    if data.count() == 0:
+        raise ValueError('Stage 4')
+    
     data = scalerModel.transform(data)
     
     data = data.select(["id", \
                         "name", \
                         "scaledFeatures"])   
+        
+    if data.count() == 0:
+        raise ValueError('Stage 5')
         
     # raise ValueError('6') 
         
@@ -365,6 +380,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                             .select(["scaledFeatures"]) \
                             .filter("id = '" + current_Song + "'") \
                             .collect()
+                            #eig wieder mit [0]
                             
     #raise ValueError('Value Error' + ''.join(current_song_feature_vector)) 
     #(current_features_"loudness"_MAreike_ist_cool_und'David'auch_ein"bisschen")
