@@ -402,6 +402,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                                     [a * w * ((q - p) ** 2) + w * (1 if a==(-1) else 0) \
                                     for a, w, p, q  \
                                     in zip(a_list, w_list, p_list, q_list)]))
+            print(distance)
                 
         except: 
             print("Except block!")
@@ -414,11 +415,12 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
     
-    raise ValueError('Rowslalall' + str(data.collect()))
-    
-    data = data.select(['id']) \
+    data = data.select('id') \
             .orderBy('distances', ascending= True) \
+                
+    raise ValueError('Rowslalall' + str(data.collect()))
             
+    
             #.collect()
             
             #TODO: FILTER CURRENT SONG
@@ -427,9 +429,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     #recommendations= [id[0] for id in data]
     # json_recommendations= {"songs": recommendations}
     # message = json.dumps(coords).encode("ascii")
-    
-    
-    data.show()  
+
 
     # raise ValueError('6')                           
             
