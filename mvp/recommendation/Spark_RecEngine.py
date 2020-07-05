@@ -372,6 +372,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         raise ValueError('Stage 5')
         
     # raise ValueError('6') 
+    
+    raise ValueError('Rows' + str(data.collect()))
         
         
     # --------------------------------------------------------------------------- #
@@ -384,7 +386,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                             .collect()
                             #eig wieder mit [0]
                             
-    raise ValueError('Rows' + str(current_song_feature_vector))
+    #raise ValueError('Rows' + str(current_song_feature_vector))
                             
     #raise ValueError('Value Error' + ''.join(current_song_feature_vector)) 
                                          
