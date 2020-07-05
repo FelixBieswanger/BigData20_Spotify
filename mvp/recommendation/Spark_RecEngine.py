@@ -402,11 +402,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                                     [a * w * ((q - p) ** 2) + w * (1 if a==(-1) else 0) \
                                     for a, w, p, q  \
                                     in zip(a_list, w_list, p_list, q_list)]))
-            print(distance)
                 
         except: 
             print("Except block!")
-            distance= 0
             
         finally:   
             return distance
@@ -417,14 +415,10 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data = data.select('id') \
             .orderBy('distances', ascending= True) \
-                
-
-            
-    
-            #.collect()
-            
             #TODO: FILTER CURRENT SONG
-            #.where('id not "' + current_Song + '"') \
+            #.filter("id not '" + current_Song + "'") \                
+
+
             
     #recommendations= [id[0] for id in data]
     # json_recommendations= {"songs": recommendations}
@@ -438,6 +432,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     # # --------------------------------------------------------------------------- #  
 
     #raise ValueError('Wir haben es eigentlich geschafft')
+    
+    raise ValueError('Rowslalall' + str(data.collect()))
         
 
     data.selectExpr("id as value") \
