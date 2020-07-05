@@ -390,7 +390,10 @@ def foreach_batch_distance(current_Parameters, epoch_id):
             
     # # --------------------------------------------------------------------------- #
     # #OUTPUT AN FRONTEND MIT KAFKA
-    # # --------------------------------------------------------------------------- #      
+    # # --------------------------------------------------------------------------- #  
+
+    raise ValueError('Wir haben es eigentlich geschafft')
+        
 
     data.selectExpr("id as value") \
         .write \

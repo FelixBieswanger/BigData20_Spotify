@@ -1,0 +1,54 @@
+Fenster 1:
+cd /Users/davidrundel/Desktop/HdM/BigData/kafka_2.12-2.5.0
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+Fenster 2:
+cd /Users/davidrundel/Desktop/HdM/BigData/kafka_2.12-2.5.0
+bin/kafka-server-start.sh config/server.properties
+
+Fenster 3:
+cd /Users/davidrundel/Desktop/HdM/BigData/kafka_2.12-2.5.0
+bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic current_song 
+=> {"current_song": "04DwTuZ2VBdJCCC5TROn7L"}
+
+Fenster 4:
+cd /Users/davidrundel/Desktop/HdM/BigData/kafka_2.12-2.5.0
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic current_song
+
+
+
+Fenster 5:
+cd /Users/davidrundel/Desktop/HdM/BigData/kafka_2.12-2.5.0
+bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic current_parameters 
+=> 
+{"value": [{"parameter": "danceability", "alpha": 1, "weight": 1},{"parameter": "loudness", "alpha": 1, "weight": 2},{"parameter": "tempo", "alpha": -1, "weight": 1}]}
+
+{"parameter": "danceability", "alpha": 1, "weight": 1}
+{"parameter": "loudness", "alpha": 1, "weight": 2}
+{"parameter": "tempo", "alpha": -1, "weight": 1}
+{"parameter": "distance", "alpha": 1, "weight": 2}
+
+Fenster 6:
+cd /Users/davidrundel/Desktop/HdM/BigData/kafka_2.12-2.5.0
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic current_parameters
+
+
+
+
+Fenster 6:
+cd /Users/davidrundel/Desktop/HdM/BigData/kafka_2.12-2.5.0
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic recommendations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
