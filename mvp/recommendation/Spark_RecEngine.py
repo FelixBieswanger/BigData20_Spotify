@@ -277,6 +277,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     distances_left= distances.loc[distances.iloc[:,0]==current_Song]
     distances_left= distances_left.iloc[:,[1, 2]]
     distances_left= distances_left.rename(columns={1: "id", 2: "neo_distance"})
+    
+    raise ValueError('1')
 
 
     distances_right= distances.loc[distances.iloc[:,1]==current_Song]
@@ -286,6 +288,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     distances= distances_left.append(distances_right)
     distances= distances.drop_duplicates()
+    
+    raise ValueError('3')
     
     
     data= data_df.copy()
@@ -299,6 +303,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data.show()
     
+    raise ValueError('2')
     
     #Parameter Subset
     data = data.select(["id", \
@@ -307,6 +312,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         "loudness", \
                         "tempo", \
                         "neo_distance"])
+        
+    raise ValueError('4')
         
  
     '''
@@ -329,7 +336,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         
     data = assembler.transform(data)
 
-      
+    raise ValueError('5')     
 
     #Normalization
     from pyspark.ml.feature import MinMaxScaler
@@ -342,7 +349,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data = data.select(["id", \
                         "name", \
-                        "scaledFeatures"])        
+                        "scaledFeatures"])   
+        
+    raise ValueError('6') 
         
         
     # --------------------------------------------------------------------------- #
@@ -386,7 +395,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     # message = json.dumps(coords).encode("ascii")
     
     
-    data.show()                            
+    data.show()  
+
+    raise ValueError('6')                           
             
     # # --------------------------------------------------------------------------- #
     # #OUTPUT AN FRONTEND MIT KAFKA
@@ -407,6 +418,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     #     print("----")
     #     print(e)
     #     print("Except in Current Parameters")
+    
+    raise ValueError('7') 
     
     pass
         
