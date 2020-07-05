@@ -366,6 +366,8 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                         "name", \
                         "scaledFeatures"])   
         
+    raise ValueError('Rows' + str(data.count()))
+        
     if data.count() == 0:
         raise ValueError('Stage 5')
         
@@ -383,7 +385,6 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                             #eig wieder mit [0]
                             
     #raise ValueError('Value Error' + ''.join(current_song_feature_vector)) 
-    #(current_features_"loudness"_MAreike_ist_cool_und'David'auch_ein"bisschen")
                                          
     p_list= list(current_song_feature_vector[0])        
 
