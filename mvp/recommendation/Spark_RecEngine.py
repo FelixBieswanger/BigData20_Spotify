@@ -511,7 +511,7 @@ consoleOutput = data_current_parameter.writeStream \
 
 userSchema_out = StructType().add("value", "string", True) \
     
-out_test = spark.read \
+out_test = spark.readStream \
             .format("kafka")\
             .option("kafka.bootstrap.servers", "kafka:9092")\
             .option("subscribe", "recommendations")\
@@ -529,7 +529,7 @@ Oder hier nicht als json converten
 #             .select(col('value.*')) \
 
       
-out_test = out_test.write \
+out_test = out_test.writeStream \
       .outputMode("append") \
       .format("console") \
       .start()
