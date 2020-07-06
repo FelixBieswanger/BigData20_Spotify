@@ -222,6 +222,7 @@ Transformation & Output: Standardisieren und Enrichment mit EuclideanDistance au
 #Initialer erster Song?
 
 #MAKE SURE, THAT CURRENT SONG IS IN NEO4J
+# => vllt Anweisung in Songs.py, dass der immer abgespielt
 
 current_Song= '7GJClzimvMSghjcrKxuf1M'
 
@@ -415,14 +416,36 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data = data.select('id') \
             .orderBy('distances', ascending= True) \
+            .head(10) \
+                
+            #.collect()[0]
             #TODO: FILTER CURRENT SONG
-            #.filter("id not '" + current_Song + "'") \                
-
-
+            #.filter("id not '" + current_Song + "'") \     
             
-    #recommendations= [id[0] for id in data]
-    # json_recommendations= {"songs": recommendations}
-    # message = json.dumps(coords).encode("ascii")
+                
+                
+    # data = data.select(to_json(struct([col(c).alias(c) for c in data.columns])).alias("value"))
+    # data = data.withColumn("key",lit("null"))
+    
+    # data = data.selectExpr("CAST(key as String)","CAST(value as String)")
+    
+    # avg_stream = data.writeStream\
+    #     .format("kafka")\
+    #     .option("kafka.bootstrap.servers", "kafka:9092")\
+    #     .option("topic", "graphdata")\
+    #     .option("startingOffsets", "latest")\
+    #     .option("checkpointLocation","./checkpoints")\
+    #     .outputMode("complete")\
+    #     .start()
+        
+    # avg_stream.awaitTermination()
+
+
+    '''       
+    recommendations= [id[0] for id in data]
+    json_recommendations= {"songs": recommendations}
+    message = json.dumps(coords).encode("ascii")
+    '''
 
 
     # raise ValueError('6')                           
@@ -437,10 +460,11 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         
     
     '''
-    Vllt doch in json converten?
+    HOPEFULLY TODO: ALS JSON PARSEN
     '''
 
     data.selectExpr("id as value") \
+        .selectExpr("CAST(value AS STRING)") \
         .write \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:9092") \
@@ -487,11 +511,13 @@ consoleOutput = data_current_parameter.writeStream \
 
 userSchema_out = StructType().add("value", "string", True) \
     
-out_test = spark.readStream \
+out_test = spark.read \
             .format("kafka")\
             .option("kafka.bootstrap.servers", "kafka:9092")\
             .option("subscribe", "recommendations")\
-            .load()                            
+            .load()       
+
+out_test= out_test.selectExpr("CAST(value AS STRING)")                     
          
 '''
 Oder hier nicht als json converten
