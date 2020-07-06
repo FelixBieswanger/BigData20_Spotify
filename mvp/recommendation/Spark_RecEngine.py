@@ -416,12 +416,12 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
     
     data = data.select('id') \
-            .filter("id not " + current_Song) \
             .orderBy('distances', ascending= True)
             #.head(10) \
                 
             #.collect()[0]
             #TODO: FILTER CURRENT SONG
+            #.filter("id not " + current_Song) \
     
             
                 
