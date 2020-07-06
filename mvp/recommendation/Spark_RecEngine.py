@@ -86,7 +86,7 @@ os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming
 Input: Initiales Laden der Tracks und zugehörigen Features aus Neo4J
 ''' 
 
-#uri = "bolt://40.80.208.184:7687"
+#uri = "bolt://40.124.97.173:7687"
 uri = "bolt://neo4j:7687/db/data"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"), encrypted=False)
 
@@ -104,7 +104,8 @@ track_list= [list(track.values())[0] for track in track_list]
 
 data_df= pd.DataFrame.from_dict(track_list)
 
-data_df.sample(10)
+
+
 
             
 
@@ -224,7 +225,7 @@ Transformation & Output: Standardisieren und Enrichment mit EuclideanDistance au
 #MAKE SURE, THAT CURRENT SONG IS IN NEO4J
 # => vllt Anweisung in Songs.py, dass der immer abgespielt
 
-current_Song= '7GJClzimvMSghjcrKxuf1M'
+current_Song= data_df.id[0]
 
 def foreach_batch_distance(current_Song_ID, epoch_id):  
     global current_Song
