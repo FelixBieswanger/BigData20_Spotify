@@ -196,6 +196,9 @@ def foreach_batch_distance(current_Song_ID, epoch_id):
 stream_song = data_current_song.writeStream \
         .foreachBatch(foreach_batch_distance) \
         .start()
+        
+        
+#In Frontend sicherstellen: Erst current_Song und dann current_Parameters senden
    
 
 # --------------------------------------------------------------------------- #
