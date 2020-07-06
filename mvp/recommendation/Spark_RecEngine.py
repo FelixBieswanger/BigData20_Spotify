@@ -277,7 +277,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         #nur einmalig ausgeführt
         #hier also stattdessen liste anders befüllen
         
-        a_list= [1, 1, -1, 1]
+        a_list= [1, 1, 1, 1]
         w_list= [1, 1, 1, 1]
         
 
@@ -416,12 +416,13 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
     
     data = data.select('id') \
-            .orderBy('distances', ascending= True) \
+            .filter("id not '" + current_Song + "'") \
+            .orderBy('distances', ascending= True)
             #.head(10) \
                 
             #.collect()[0]
             #TODO: FILTER CURRENT SONG
-            #.filter("id not '" + current_Song + "'") \     
+    
             
                 
                 
@@ -494,11 +495,11 @@ stream_param = data_current_parameter.writeStream \
         
         
         
-def process_row(df, epoch_id):
-    print("we lit")
-    pass
+# def process_row(df, epoch_id):
+#     print("we lit")
+#     pass
 
-stream_param2 = data_current_parameter.writeStream.foreachBatch(process_row).start()
+# stream_param2 = data_current_parameter.writeStream.foreachBatch(process_row).start()
         
         
             
@@ -549,7 +550,7 @@ stream_song.awaitTermination()
        
 stream_param.awaitTermination()
 
-stream_param2.awaitTermination()
+
             
 out_test.awaitTermination()
 
