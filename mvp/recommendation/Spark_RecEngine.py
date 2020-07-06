@@ -27,54 +27,12 @@ from pyspark.sql.types import FloatType
 import pyspark.sql.functions as F
 from scipy.spatial import distance
 from neo4j import GraphDatabase
-# from neo4j.graph import *
 from pyspark.sql.functions import from_json,to_json,struct,col, mean as _mean, lit, first
 
 import os
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5,org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.5 pyspark-shell'
 
 
-
-# SPARK SUBMIT
-# org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5,
-# org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.5 
-
-# WURSTMEISTER KAFKA
-# kafka:2.11-2.0.0
-
-# REUIREMENTS TXT
-# pyspark==2.4.5,
-
-# DOKU:        
-# packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0
-
-
-# =>
-#                         kafka:      pyspark
-# Spark Submit             
-# Streaming kafka         0-8_2.11    :2.4.5
-# SQL kafka               0-10_2.11   :2.4.5
-
-# Wurstmeister Kafka
-# kafka                   2.11-       2.0.0
-
-# Requirements txt
-#                                     :2.4.5
-  
-                            
-# ---------------------------------------------  
-    
-# SOLL / Doku:
-# SQL Kafka               0-10_2.12   :3.0.0
-#                         0.11.0.0 or up
-
-# ---------------------------------------------         
-        
-# Lokal:
-# same
-# same
-# kafka                  1.4.7 
-# pyspark                             2.4.5
 
 
 # --------------------------------------------------------------------------- #
@@ -86,7 +44,6 @@ os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming
 Input: Initiales Laden der Tracks und zugehörigen Features aus Neo4J
 ''' 
 
-#uri = "bolt://40.124.97.173:7687"
 uri = "bolt://neo4j:7687/db/data"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "streams"), encrypted=False)
 
@@ -132,15 +89,8 @@ driver.close()
   
 distance_list= [list(distance.values())[0] for distance in distance_list]
 
-
-#distances= [[list[0]['id'], list[-1]['id'], len(list)] for list in distance_list]
 distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), len(graphpath)] for graphpath in distance_list]
 distances= pd.DataFrame.from_dict(distances)
-
-
-print("------")
-distances.sample(10)
-
 
 
 
@@ -163,9 +113,15 @@ spark= SparkSession(sc) \
     .getOrCreate()
     
 #sc.setLogLevel("DEBUG")
-    
-    
-    
+
+
+
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+
+
 
 '''
 Input: Current Song & current Parameters from Frontend
@@ -208,23 +164,19 @@ data_current_parameter = data_current_parameter \
             .select(col('value.*'))
     
 
+  
+    
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
-    
-    
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
 
 '''
 Transformation & Output: Standardisieren und Enrichment mit EuclideanDistance ausgehend von current Song
 '''
 
-#Initialer erster Song?
-
-#MAKE SURE, THAT CURRENT SONG IS IN NEO4J
-# => vllt Anweisung in Songs.py, dass der immer abgespielt
-
+#Initialer erster Song
 current_Song= data_df.id[0]
 
 def foreach_batch_distance(current_Song_ID, epoch_id):  
@@ -249,17 +201,6 @@ stream_song = data_current_song.writeStream \
 # --------------------------------------------------------------------------- #
 
 def foreach_batch_distance(current_Parameters, epoch_id):    
-    # print("-----------------")
-    # print("-----------------")
-    # print("-----------------")
-    print("hi")
-    # print("-----------------")
-    # print("-----------------")
-    
-    # print(current_Parameters)
-    
-    # try:           
-    #Get global variables
     global data_df
     global distances
     global current_Song
@@ -280,17 +221,12 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         a_list= [1, 1, 1, 1]
         w_list= [1, 1, 1, 1]
         
-
-        # raise ValueError('Alpha & Weight still empty')
         
     
     #Merge new distances
     distances_left= distances.loc[distances.iloc[:,0]==current_Song]
     distances_left= distances_left.iloc[:,[1, 2]]
     distances_left= distances_left.rename(columns={1: "id", 2: "neo_distance"})
-    
-    # raise ValueError('1')
-
 
     distances_right= distances.loc[distances.iloc[:,1]==current_Song]
     distances_right= distances_right.iloc[:,[0, 2]]
@@ -298,26 +234,15 @@ def foreach_batch_distance(current_Parameters, epoch_id):
 
     
     distances_merge= distances_left.append(distances_right)
-    distances_merge= distances_merge.drop_duplicates()
-    
-    # raise ValueError('3')
-    
+    distances_merge= distances_merge.drop_duplicates()    
     
     data= data_df.copy()
-    #raise ValueError("---" + data.to_string())
     
     data= data.merge(distances_merge, on='id', how='left')
     data['neo_distance']= data.neo_distance.fillna(100)  
     
     sqlCtx = SQLContext(sc)
-    data = sqlCtx.createDataFrame(data)
-    
-    if data.count() == 0:
-        raise ValueError('Stage 1')
-    
-    #data.show()
-    
-    # raise ValueError('2')
+    data = sqlCtx.createDataFrame(data)   
     
     #Parameter Subset
     data = data.select(["id", \
@@ -329,10 +254,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         
     if data.count() == 0:
         raise ValueError('Stage 2')
-        
-    # raise ValueError('4')
-        
- 
+
     #Enables Parallel Processing on Different Nodes
     #data = sc.parallelize(data)
         
@@ -351,9 +273,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data = assembler.transform(data)
     
     if data.count() == 0:
-        raise ValueError('Stage 3')
-
-    # raise ValueError('5')     
+        raise ValueError('Stage 3')   
 
     #Normalization
     from pyspark.ml.feature import MinMaxScaler
@@ -376,10 +296,6 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     if data.count() == 0:
         raise ValueError('Stage 5')
         
-    # raise ValueError('6') 
-    
-    #raise ValueError('Rows' + str(data.collect()))
-        
         
     # --------------------------------------------------------------------------- #
     #ENRICH WITH EUCLIDEAN DISTANCE ON STEROIDS
@@ -389,15 +305,10 @@ def foreach_batch_distance(current_Parameters, epoch_id):
                             .select("scaledFeatures") \
                             .filter("id = '" + current_Song + "'") \
                             .collect()[0]
-                            
-    #raise ValueError('Rows' + str(current_song_feature_vector))
-                            
-    #raise ValueError('Value Error' + ''.join(current_song_feature_vector)) 
                                          
     p_list= list(current_song_feature_vector[0])    
 
     #raise ValueError('p' + str(p_list) + 'a' + str(a_list) + 'w' +  str(w_list)) 
-
     def euclDistance(q_list):        
         try:
             distance= math.sqrt(sum( \
@@ -417,53 +328,15 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data = data.select('id') \
             .orderBy('distances', ascending= True)
+
+            #TODO: ONLY RETURN TOP N         
             #.head(10) \
-                
-            #.collect()[0]
             #TODO: FILTER CURRENT SONG
-            #.filter("id not " + current_Song) \
-    
-            
-                
-                
-    # data = data.select(to_json(struct([col(c).alias(c) for c in data.columns])).alias("value"))
-    # data = data.withColumn("key",lit("null"))
-    
-    # data = data.selectExpr("CAST(key as String)","CAST(value as String)")
-    
-    # avg_stream = data.writeStream\
-    #     .format("kafka")\
-    #     .option("kafka.bootstrap.servers", "kafka:9092")\
-    #     .option("topic", "graphdata")\
-    #     .option("startingOffsets", "latest")\
-    #     .option("checkpointLocation","./checkpoints")\
-    #     .outputMode("complete")\
-    #     .start()
-        
-    # avg_stream.awaitTermination()
-
-
-    '''       
-    recommendations= [id[0] for id in data]
-    json_recommendations= {"songs": recommendations}
-    message = json.dumps(coords).encode("ascii")
-    '''
-
-
-    # raise ValueError('6')                           
+            #.filter("id not " + current_Song) \                      
             
     # # --------------------------------------------------------------------------- #
     # #OUTPUT AN FRONTEND MIT KAFKA
     # # --------------------------------------------------------------------------- #  
-
-    #raise ValueError('Wir haben es eigentlich geschafft')
-    
-    #raise ValueError('Rowslalall' + str(data.collect()))
-        
-    
-    '''
-    HOPEFULLY TODO: ALS JSON PARSEN
-    '''
 
     data.selectExpr("id as value") \
         .selectExpr("CAST(value AS STRING)") \
@@ -473,44 +346,33 @@ def foreach_batch_distance(current_Parameters, epoch_id):
         .option("topic", "recommendations") \
         .save()
     
-
-    # except Exception as e: 
-    #     print("----")
-    #     print(e)
-    #     print("Except in Current Parameters")
-    
-    # raise ValueError('7') 
-    
     pass
-        
-
-
-      
-
-    
+         
         
 stream_param = data_current_parameter.writeStream \
         .foreachBatch(foreach_batch_distance) \
-        .start()
+        .start()      
         
         
-        
-# def process_row(df, epoch_id):
-#     print("we lit")
-#     pass
+    
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+'''
+Console Output for Testing
+'''
+   
 
-# stream_param2 = data_current_parameter.writeStream.foreachBatch(process_row).start()
-        
-        
-            
+#Current Parameter         
 consoleOutput = data_current_parameter.writeStream \
       .outputMode("append") \
       .format("console") \
       .start()
       
 ############   
-   
 
+#Current Recommendation
 userSchema_out = StructType().add("value", "string", True) \
     
 out_test = spark.readStream \
@@ -520,38 +382,28 @@ out_test = spark.readStream \
             .load()       
 
 out_test= out_test.selectExpr("CAST(value AS STRING)")                     
-         
-'''
-Oder hier nicht als json converten
-'''
-# out_test = out_test.selectExpr("CAST(value AS STRING)")
-
-# out_test = out_test \
-#             .withColumn("value", from_json("value", userSchema_out)) \
-#             .select(col('value.*')) \
-
-      
+               
 out_test = out_test.writeStream \
       .outputMode("append") \
       .format("console") \
-      .start()
-      
-############   
-   
-      
-      
-      
-        
+      .start()   
 
+   
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+'''
+Await Termination Statements
+'''     
+      
 
 consoleOutput.awaitTermination()
   
 stream_song.awaitTermination()
        
 stream_param.awaitTermination()
-
-
-            
+        
 out_test.awaitTermination()
 
 
