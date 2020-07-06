@@ -529,7 +529,7 @@ Oder hier nicht als json converten
 #             .select(col('value.*')) \
 
       
-out_test = out_test.writeStream \
+out_test = out_test.write \
       .outputMode("append") \
       .format("console") \
       .start()
