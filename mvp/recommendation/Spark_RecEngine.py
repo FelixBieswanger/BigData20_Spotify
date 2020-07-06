@@ -417,7 +417,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data = data.select('id') \
             .orderBy('distances', ascending= True) \
-            .head(10) \
+            #.head(10) \
                 
             #.collect()[0]
             #TODO: FILTER CURRENT SONG
