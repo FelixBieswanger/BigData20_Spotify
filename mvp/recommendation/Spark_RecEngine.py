@@ -8,7 +8,7 @@ Created on Mon Jun 22 14:51:50 2020
 
 
 '''
-Import verwendeter Bibliotheken
+Import verwendeter Bibliotheken -
 ''' 
 
 import pandas as pd
