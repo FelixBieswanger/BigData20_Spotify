@@ -331,6 +331,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
     
     data = data.select('id') \
+            .where("distances > 0") \
             .orderBy('distances', ascending= True) \
             .limit(1)
 
@@ -342,9 +343,10 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     # # --------------------------------------------------------------------------- #
     # #OUTPUT AN FRONTEND MIT KAFKA
     # # --------------------------------------------------------------------------- #  
+    
+    data = data.select(to_json(struct([col(c).alias(c) for c in data.columns])).alias("value"))
 
-    data.selectExpr("id as value") \
-        .selectExpr("CAST(value AS STRING)") \
+    data.selectExpr("CAST(value AS STRING)") \
         .write \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:9092") \
