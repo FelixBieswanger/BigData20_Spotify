@@ -6,6 +6,7 @@ Created on Mon Jun 22 14:51:50 2020
 @author: davidrundel
 """
 
+#try
 
 '''
 Import verwendeter Bibliotheken -
