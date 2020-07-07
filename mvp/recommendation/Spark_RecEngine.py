@@ -332,6 +332,7 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     
     data = data.select('id') \
             .orderBy('distances', ascending= True)
+            .limit(1)
 
             #TODO: ONLY RETURN TOP N         
             #.head(10) \
