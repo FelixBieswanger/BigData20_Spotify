@@ -178,7 +178,8 @@ Transformation & Output: Standardisieren und Enrichment mit EuclideanDistance au
 '''
 
 #Initialer erster Song
-current_Song= data_df.id[0]
+#current_Song= data_df.id[0]
+current_Song= '11dFghVXANMlKmJXsNCbNl'
 
 def foreach_batch_distance(current_Song_ID, epoch_id):  
     global current_Song
