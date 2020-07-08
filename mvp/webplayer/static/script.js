@@ -23,7 +23,7 @@ const authEndpoint = 'https://accounts.spotify.com/authorize';
 
 // Replace with your app's client ID, redirect URI and desired scopes
 const clientId = '37e56ecffd2e4712a07bfcf7ac4ec508'; //DashboardID
-const redirectUri = 'http://40.124.89.82:6969/'; //Whitelisted in Dashbaord
+const redirectUri = 'http://40.74.218.18:6969/'; //Whitelisted in Dashbaord
 //const redirectUri = 'http://localhost:6969/'; //Whitelisted in Dashbaord
 const scopes = [
     'streaming',
@@ -101,27 +101,33 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 var slider = document.getElementById("myRange");
 var output = document.getElementById("demo");
 
-function save(){
-    loudness = document.getElementById("Loudness").value;
-    danceability = document.getElementById("Danceability").value
-    tempo = document.getElementById("Tempo").value
 
-    var currentParametersJson = {"parameters":
-        {
-            "danceability":{
-                "alpha": danceability,
-                "weight": 2
-            },
-            "loudness":{
-                "alpha": loudness,
-                "weight": 2
-            },
-            "tempo":{
-                "alpha": tempo,
-                "weight": 2
-            }
-        }
-    }
+function get_dashboard_parameter(){
+    loudness = Math.abs(parseInt(document.getElementById("Loudness").value));
+    danceability = Math.abs(parseInt(document.getElementById("Danceability").value));
+    tempo = Math.abs(parseInt(document.getElementById("Tempo").value));
+    distance = Math.abs(parseInt(document.getElementById("Distance").value));
+
+
+    alpha_loud = (loudness > 0) ? -1 : 1;
+    alpha_dance = (danceability > 0) ? -1 : 1;
+    alpha_tempo = (tempo > 0) ? -1 : 1;
+    alpha_distance = (distance > 0) ? -1 : 1;
+
+    var currentParametersJson = [
+        { "parameter": "danceability", "alpha": alpha_loud, "weight": loudness },
+        { "parameter": "loudness", "alpha": alpha_dance, "weight": danceability },
+        { "parameter": "tempo", "alpha": alpha_tempo, "weight": tempo },
+        { "parameter": "distance", "alpha": alpha_distance, "weight": distance }
+    ];
+
+    return currentParametersJson;
+}
+
+
+function save(){
+    
+    currentParametersJson = get_dashboard_parameter()
    
     $.ajax({
         url: "/parameters",
@@ -129,7 +135,6 @@ function save(){
         data: JSON.stringify(currentParametersJson),
         success: function (msg) {
             console.log(msg);
-            console.log("heY");
         }
     });
 
@@ -189,6 +194,10 @@ function show_value2(x){
 
 function show_value3(x){
     document.getElementById("slider_value3").innerHTML=x;
+}
+
+function show_value4(x) {
+    document.getElementById("slider_value4").innerHTML = x;
 }
 
 
@@ -331,12 +340,26 @@ function changeIcon(){
 var source = new EventSource("/recomendations");
 
 source.addEventListener("message", function (e) {
-    message = JSON.parse(e.data);
-    addToQueue(message["id"]);
+    message = e.data;
+    console.log(message);
+    //addToQueue(message["id"]);
 });
 
 
 function sendNewTrackToTopic(songid){
+
+    currentParametersJson = get_dashboard_parameter()
+
+    $.ajax({
+        //API
+        url: "/parameters",
+        type: "POST",
+        data: JSON.stringify(currentParametersJson),
+        success: function (msg) {
+            console.log(msg);
+        }
+    });
+
     data = {
         "currentSong":songid
     }

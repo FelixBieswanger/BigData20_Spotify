@@ -13,43 +13,47 @@ def index():
 def producer1():
     #form data to python dict
 
-    producer = KafkaProducer(bootstrap_servers="kafka:9092",value_serializer=lambda x: json.dumps(x).encode("ascii"))
-    data = request.form.to_dict()
-    keys = list(data.keys())[0]
-    message = json.loads(keys)
-    print(message)  
-
-    producer.send("current_Parameters", message)
-    producer.flush()
-
-    return "Done"
+    try:
+        producer = KafkaProducer(bootstrap_servers="kafka:9092",value_serializer=lambda x: json.dumps(x).encode("ascii"))
+        data = request.form.to_dict()
+        print(data)
+        keys = list(data.keys())[0]
+        messages = json.loads(keys)
+        print(messages)  
+        for message in messages:
+            producer.send("current_Parameters", message)
+        producer.flush()
+        return str(messages)
+    except Exception as e:
+        return str(e)
 
 
 @app.route("/currentSong", methods=["POST"])
 def producer2():
     #form data to python dict
+    try:
+        producer = KafkaProducer(bootstrap_servers="kafka:9092",
+                                value_serializer=lambda x: json.dumps(x).encode("ascii"))
+        data = request.form.to_dict()
+        keys = list(data.keys())[0]
+        message = json.loads(keys)
+        producer.send("current_Song", message)
+        producer.flush()
+        return "Done"
+    except Exception as e:
+        return str(e)
 
-    producer = KafkaProducer(bootstrap_servers="kafka:9092",
-                             value_serializer=lambda x: json.dumps(x).encode("ascii"))
-    data = request.form.to_dict()
-    keys = list(data.keys())[0]
-    message = json.loads(keys)
-    print(message)
 
-    producer.send("current_Song", message)
-    producer.flush()
-
-    return "Done"
 
 @app.route("/recomendations")
 def consumer():
     consumer = KafkaConsumer("recommendations", bootstrap_servers="kafka:9092",
-                             value_deserializer=lambda x: json.loads(x.decode('utf-8')), auto_offset_reset="earliest")
+                             value_deserializer=lambda x: x, auto_offset_reset="latest")
 
     #Using Yield create an Generator
     def events():
         for message in consumer:
-            yield 'data:{0}\n\n'.format(message.value)
+            yield 'data:{0}\n\n'.format(str(message.value))
 
     #Mimetype: Event-Stream takes an Generator
     return Response(events(), mimetype="text/event-stream")
