@@ -23,8 +23,8 @@ const authEndpoint = 'https://accounts.spotify.com/authorize';
 
 // Replace with your app's client ID, redirect URI and desired scopes
 const clientId = '37e56ecffd2e4712a07bfcf7ac4ec508'; //DashboardID
-const redirectUri = 'http://40.74.218.18:6969/'; //Whitelisted in Dashbaord
-//const redirectUri = 'http://localhost:6969/'; //Whitelisted in Dashbaord
+//const redirectUri = 'http://40.74.218.18:6969/'; //Whitelisted in Dashbaord
+const redirectUri = 'http://localhost:6969/'; //Whitelisted in Dashbaord
 const scopes = [
     'streaming',
     'user-read-email',
@@ -39,7 +39,7 @@ if (!_token) {
 }
 
 var id = '';
-var currentSongId;
+var currentSongId = {"id":"11dFghVXANMlKmJXsNCbNl"};
 var searchResult;
 
 /**var nextSong = new EventSource("/songs");
@@ -51,8 +51,7 @@ nextSong.addEventListener("message", function(songid){
 // Set up the Web Playback SDK
 
 /** */
-//window.onSpotifyPlayerAPIReady = () => {
-window.onSpotifyWebPlaybackSDKReady = () => {
+window.onSpotifyPlayerAPIReady = () => {
     console.log(_token)
     const player = new Spotify.Player({
     name: 'Live DJ Session',
@@ -73,7 +72,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
         console.log(state) //Standard SDK
         
         //TO IMPLEMENT
-        sendNewTrackToTopic(state.track_window.current_track.id)
+        //sendNewTrackToTopic(state.track_window.current_track.id)
 
         $('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
         $('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
@@ -128,9 +127,10 @@ function get_dashboard_parameter(){
 function save(){
     
     currentParametersJson = get_dashboard_parameter()
-   
+    /** 
     $.ajax({
-        url: "/parameters",
+        crossOrigin: true,
+        url: "http://40.119.27.3:6969/parameters/",
         type: "POST",
         data: JSON.stringify(currentParametersJson),
         success: function (msg) {
@@ -138,8 +138,44 @@ function save(){
         }
     });
 
-    //console.log(currentParametersJson);
+    */
+
+    getCurrentTrack();
+
+    var xhr1 = new XMLHttpRequest();
+    xhr1.open("POST", 'http://40.119.27.3:6969/currentSong', true);
+
+    //Send the proper header information along with the request
+    xhr1.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr1.onreadystatechange = function () { // Call a function when the state changes.
+        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            // Request finished. Do processing here.
+            console.log(xhr1.responseText);
+            console.log("sent current song");
+        }
+    }
+
+    data = {
+        "current_song": currentSongId["id"]
+    }
+    console.log(data)
+    xhr1.send(JSON.stringify(data));
     
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", 'http://40.119.27.3:6969/parameters', true);
+
+    //Send the proper header information along with the request
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onreadystatechange = function () { // Call a function when the state changes.
+        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            // Request finished. Do processing here.
+            console.log(xhr.responseText);
+        }
+    }
+    xhr.send(JSON.stringify(currentParametersJson));
 }
 
 function songHandler(){
@@ -203,7 +239,7 @@ function show_value4(x) {
 
 // Play a track using our new device ID
 function play() {
-    var uri = 'spotify:track:2cGxRwrMyEAp8dEbuZaVv6", "spotify:track:0I67c6jPoBxVkUwo02bZnD';
+    var uri = 'spotify:track:11dFghVXANMlKmJXsNCbNl';
     $.ajax({
         url: "https://api.spotify.com/v1/me/player/play?device_id=" + id,
         type: "PUT",
@@ -337,12 +373,11 @@ function changeIcon(){
 
 //TO DO IMPLEMENT NEW RECOMENDATION
 
-var source = new EventSource("/recomendations");
+var source = new EventSource("http://40.119.27.3:6969/recomendations");
 
 source.addEventListener("message", function (e) {
-    message = e.data;
-    console.log(message);
-    //addToQueue(message["id"]);
+    message = JSON.parse(e.data.substring(2,e.data.length-1));
+    addToQueue(message["id"]);
 });
 
 
