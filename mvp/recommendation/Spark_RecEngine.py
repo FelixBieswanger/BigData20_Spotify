@@ -185,9 +185,12 @@ def foreach_batch_distance(current_Song_ID, epoch_id):
     global current_Song
     
     try:
-        current_Song= current_Song_ID \
+        current_Song= current_Song_ID.select("current_song") \
                 .collect()[0]
+                
+        print("hi")
                 #Verified: Always takes last
+                
                 
         current_Song= current_Song[0]
         

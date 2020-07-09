@@ -3,6 +3,7 @@ var songPaused = false;
 var danceability;
 var loudness;
 var tempo;
+var distance;
 // Get the hash of the url
 const hash = window.location.hash
 .substring(1)
@@ -134,7 +135,7 @@ function save(){
         type: "POST",
         data: JSON.stringify(currentParametersJson),
         success: function (msg) {
-            console.log(msg);
+            //console.log(msg);
         }
     });
 
@@ -302,7 +303,7 @@ function addToQueue(songid){
         type: 'POST',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) {
-            console.log("added song with id" + songid + "to the queue")
+            console.log("added song with id: " + songid + " to the queue")
         }
     });
 }
