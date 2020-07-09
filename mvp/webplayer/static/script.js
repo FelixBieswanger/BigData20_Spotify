@@ -3,6 +3,7 @@ var songPaused = false;
 var danceability;
 var loudness;
 var tempo;
+var distance;
 // Get the hash of the url
 const hash = window.location.hash
 .substring(1)
@@ -23,7 +24,7 @@ const authEndpoint = 'https://accounts.spotify.com/authorize';
 
 // Replace with your app's client ID, redirect URI and desired scopes
 const clientId = '37e56ecffd2e4712a07bfcf7ac4ec508'; //DashboardID
-const redirectUri = 'http://40.74.218.18:6969/'; //Whitelisted in Dashbaord
+const redirectUri = 'http://localhost:6969/'; //Whitelisted in Dashbaord
 //const redirectUri = 'http://localhost:6969/'; //Whitelisted in Dashbaord
 const scopes = [
     'streaming',
@@ -130,11 +131,11 @@ function save(){
     currentParametersJson = get_dashboard_parameter()
    
     $.ajax({
-        url: "/parameters",
+        url: "/api/parameters",
         type: "POST",
         data: JSON.stringify(currentParametersJson),
         success: function (msg) {
-            console.log(msg);
+            //console.log(msg);
         }
     });
 
@@ -203,7 +204,7 @@ function show_value4(x) {
 
 // Play a track using our new device ID
 function play() {
-    var uri = 'spotify:track:2cGxRwrMyEAp8dEbuZaVv6", "spotify:track:0I67c6jPoBxVkUwo02bZnD';
+    var uri = 'spotify:track:11dFghVXANMlKmJXsNCbNl';
     $.ajax({
         url: "https://api.spotify.com/v1/me/player/play?device_id=" + id,
         type: "PUT",
@@ -266,7 +267,7 @@ function addToQueue(songid){
         type: 'POST',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) {
-            console.log("added song with id" + songid + "to the queue")
+            console.log("added song with id: " + songid + " to the queue")
         }
     });
 }

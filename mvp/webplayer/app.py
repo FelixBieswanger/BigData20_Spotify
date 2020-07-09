@@ -1,38 +1,43 @@
 from kafka import KafkaConsumer, KafkaProducer
-from flask import Flask, render_template, Response, request
+from flask import Flask, render_template, Response, request, Blueprint, url_for
+from flask_restplus import Resource, Api
 import json
 
 
 app = Flask(__name__)
+blueprint = Blueprint('api', __name__, url_prefix='/api')
+api = Api(blueprint, doc='/doc')
+app.register_blueprint(blueprint)
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/parameters", methods=["POST"])
-def producer1():
-    #form data to python dict
+@api.route("/parameters")
+class Producer1(Resource):
+    def post(self):
+        #form data to python dict
 
-    try:
-        producer = KafkaProducer(bootstrap_servers="kafka:9092",value_serializer=lambda x: json.dumps(x).encode("ascii"))
-        data = request.form.to_dict()
-        print(data)
-        keys = list(data.keys())[0]
-        messages = json.loads(keys)
-        print(messages)  
-        for message in messages:
-            producer.send("current_Parameters", message)
-        producer.flush()
-        return str(messages)
-    except Exception as e:
-        return str(e)
-
+        try:
+            producer = KafkaProducer(bootstrap_servers="localhost:9092",
+                                     value_serializer=lambda x: json.dumps(x).encode("ascii"))
+            data = request.form['data']
+            print(request)
+            keys = list(data.keys())[0]
+            messages = json.loads(keys)
+            print(messages)
+            for message in messages:
+                producer.send("current_Parameters", message)
+            producer.flush()
+            return str(messages)
+        except Exception as e:
+            return str(e)
 
 @app.route("/currentSong", methods=["POST"])
 def producer2():
     #form data to python dict
     try:
-        producer = KafkaProducer(bootstrap_servers="kafka:9092",
+        producer = KafkaProducer(bootstrap_servers="localhost:9092",
                                 value_serializer=lambda x: json.dumps(x).encode("ascii"))
         data = request.form.to_dict()
         keys = list(data.keys())[0]
@@ -47,7 +52,7 @@ def producer2():
 
 @app.route("/recomendations")
 def consumer():
-    consumer = KafkaConsumer("recommendations", bootstrap_servers="kafka:9092",
+    consumer = KafkaConsumer("recommendations", bootstrap_servers="localhost:9092",
                              value_deserializer=lambda x: x, auto_offset_reset="latest")
 
     #Using Yield create an Generator
@@ -60,4 +65,4 @@ def consumer():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=False, port=6969, use_reloader=False)
+    app.run(host="localhost", debug=True, port=6969)
