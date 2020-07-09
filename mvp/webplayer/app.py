@@ -21,8 +21,8 @@ class Producer1(Resource):
         try:
             producer = KafkaProducer(bootstrap_servers="localhost:9092",
                                      value_serializer=lambda x: json.dumps(x).encode("ascii"))
-            data = request.form['data']
-            print(request)
+            data = request.form.to_dict()
+            print(request.form.to_dict())
             keys = list(data.keys())[0]
             messages = json.loads(keys)
             print(messages)
