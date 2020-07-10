@@ -35,6 +35,8 @@
     flex-basis: 30%;
     position: flex;
     align-items: stretch;
+    border: 3px solid white;
+    border-radius: 15px;
 }
 
 #webplayer {
@@ -42,6 +44,8 @@
     flex-basis: %;
     position: flex;
     align-items: stretch;
+    border: 3px solid white;
+    border-radius: 15px;
 }
 
 .songnavigation {
@@ -218,4 +222,6 @@ content: '';
     flex-basis: 30%;
     position: flex;
     align-items: stretch;
+    border: 3px solid white;
+    border-radius: 15px;
 }
