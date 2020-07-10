@@ -6,7 +6,7 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://kit.fontawesome.com/d1328a1a31.js" crossorigin="anonymous"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
-    <!-- <script type="text/javascript" src="{{ url_for('static', filename='spotify-player.js') }}"></script> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='spotify-player.js') }}"></script>
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
     <link rel="stylesheet" href ="static/style.css">
 
@@ -16,19 +16,12 @@
         <img src="static/Logo.png" class="logo">
     </div>
     <div id="contents">
-        <div id="search">
-            <h4>Suche:</h4>
-            <input id="searchbox" type="text">
-            <button onclick="search()" class="button">Gogo</button><br>
-            <span id="search-res-0"></span><br>
-            <span id="search-res-1"></span><br>
-            <span id="search-res-2"></span><br>
-            <span id="search-res-3"></span><br>
-            <span id="search-res-4"></span><br>
-            <span id="search-res-5"></span><br>
-            <span id="search-res-6"></span><br>
-            <span id="search-res-7"></span>
+        <div id="notifications">
+            <h4>Feed:</h4>
+            <div id="notificationcontainer">
+            </div>
         </div>
+
         <div id="webplayer">
             <img id="current-track" src="static/cover.png" alt="albumcover should be displayed here" width="300" height="300"/><br>
             <span id="current-track-name"></span> <br>

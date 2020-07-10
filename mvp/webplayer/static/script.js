@@ -4,6 +4,8 @@ var danceability;
 var loudness;
 var tempo;
 var distance;
+var currentTrackName;
+var currentTrackArtist;
 // Get the hash of the url
 const hash = window.location.hash
 .substring(1)
@@ -280,7 +282,8 @@ function previous(){
         type: 'POST',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) {
-            console.log("previous")
+            console.log("previous");
+            if(isPlaying == false);
         }
     });
 }
@@ -304,8 +307,37 @@ function addToQueue(songid){
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) {
             console.log("added song with id: " + songid + " to the queue")
+
+            $.ajax({
+                url: 'https://api.spotify.com/v1/tracks/' + songid,
+                type: 'GET',
+                beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+                success: function(data){
+                    console.log('hab info über gequeten song!');
+                    console.log(data);
+                    currentTrackName = data.name;
+                    currentTrackArtist = data.artists[0].name;
+                    displayNewRecommendation();
+                }
+            });
         }
     });
+}
+
+function displayNewRecommendation(){
+    let message = document.createTextNode('Neue Recommendation erhalten!');
+    let info = document.createTextNode(currentTrackArtist + ' - ' + currentTrackName);
+    let d = document.createElement('div');
+    d.setAttribute("id", "notification");
+    d.appendChild(message);
+    d.appendChild(info);
+
+    let feed = document.getElementById('notificationcontainer');
+    feed.appendChild(d);
+
+    setTimeout(function(){
+        $('#notification').remove();
+    }, 25000)
 }
 
 function readJson(){
@@ -316,8 +348,9 @@ function readJson(){
 }
 
 function search(){
-    var searchcontext = $('#searchbox').val();
-    console.log(searchcontext)
+    //displayNewRecommendation();
+    //var searchcontext = $('#searchbox').val();
+    //console.log(searchcontext)
     
     //const myData = {
     //    q: searchcontext,
@@ -342,7 +375,7 @@ function search(){
         xhr.setRequestHeader('Authorization', 'Bearer ' + _token ); }
     })**/
     
-    fetch(
+    /**fetch(
         'https://cors-anywhere.herokuapp.com/api.spotify.com/v1/search?q=' + searchcontext + '&type=track&market=de',
         {
             headers: {
@@ -353,7 +386,7 @@ function search(){
     .then(result => result.json()).then(result => 
         displayResults(result)
     )
-    
+    */
 }
 
 //hier schleifendurchläufe an ergebnisse anpassen. beim api call evtl ergebnisse limitieren.

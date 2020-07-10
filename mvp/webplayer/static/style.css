@@ -193,8 +193,29 @@ content: '';
 }
 
 .logo{
- float: center;
-  width: 170px;
-  height: 170px;
+    float: center;
+    width: 170px;
+    height: 170px;
  }
 
+#notification{
+    background-color: rgba(0,0,0,0.5);
+    height: 30px;
+    width: 300px;
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+    line-height: 30px;
+    text-align: center;
+}
+
+#notificationcontainer{
+    max-height: 400px;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+#notifications{
+    flex-basis: 30%;
+    position: flex;
+    align-items: stretch;
+}
