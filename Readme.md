@@ -4,5 +4,5 @@
 
 
 Ordnerstruktur:
-  -k8 : beinhaltet alle Files zum deployment auf Kubernetes mit Hilfe der Azure Cloud. Dabei liegen die Docker Images auf unserer Azure Container Registery.
-  -mvp: beinhaltet alle Code Files (Python) sowie die entsprechenden Dockerfiles 
+..* k8 : beinhaltet alle Files zum deployment auf Kubernetes mit Hilfe der Azure Cloud. Dabei liegen die Docker Images auf unserer Azure Container Registery.
+..* mvp: beinhaltet alle Code Files (Python) sowie die entsprechenden Dockerfiles 
