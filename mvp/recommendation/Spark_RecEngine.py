@@ -6,10 +6,9 @@ Created on Mon Jun 22 14:51:50 2020
 @author: davidrundel
 """
 
-#try
 
 '''
-Import verwendeter Bibliotheken -
+Import verwendeter Bibliotheken
 ''' 
 
 import pandas as pd
@@ -32,6 +31,7 @@ from pyspark.sql.functions import from_json,to_json,struct,col, mean as _mean, l
 
 import os
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5,org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.5 pyspark-shell'
+
 
 
 
@@ -63,15 +63,15 @@ track_list= [list(track.values())[0] for track in track_list]
 data_df= pd.DataFrame.from_dict(track_list)
 
 
-
-
             
 
         
 # --------------------------------------------------------------------------- #
 
+'''
+Input: Initiales Laden der kürzesten Distanz je Song-Kombination
+''' 
 
-#Get distances for all pairs of songs
 Distance_Query="""MATCH (n:Track) WITH collect(n) as nodes UNWIND nodes as n 
 UNWIND nodes as m WITH * WHERE id(n) < id(m) 
 MATCH path = allShortestPaths( (n)-[*..]-(m) ) RETURN path"""
@@ -90,24 +90,26 @@ driver.close()
   
 distance_list= [list(distance.values())[0] for distance in distance_list]
 
-distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), len(graphpath)] for graphpath in distance_list]
+distances= [[graphpath.start_node.get('id'), graphpath.end_node.get('id'), \
+             len(graphpath)] for graphpath in distance_list]
+    
 distances= pd.DataFrame.from_dict(distances)
 
 
 
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
 
 
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
 '''
 Anlegen des Spark Projektes
 ''' 
 
-sc = SparkContext("local[2]", "EuclideanDistanceOnSteroids") #1.Spark, Mesos, YARN URL or local, 2. appName-Parametr
-ssc = StreamingContext(sc, 10) #Spark-Context-Object, Interval 10 seconds
+sc = SparkContext("local[2]", "EuclideanDistanceOnSteroids") 
+
 spark= SparkSession(sc) \
     .builder.appName("EuclideanDistanceOnSteroids")\
     .master("local[4]")\
@@ -117,18 +119,17 @@ spark= SparkSession(sc) \
 
 
 
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
 
 
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
 '''
-Input: Current Song & current Parameters from Frontend
+Input: Spark Structured Streaming des jeweilig aktuellen Songs im Frontend
 ''' 
 
-#Topic Current Song
 userSchema_Song = StructType().add("current_song", "string", True) \
     
 data_current_song = spark.readStream \
@@ -145,9 +146,14 @@ data_current_song = data_current_song \
             
 
         
+
+
 # --------------------------------------------------------------------------- #
 
-#Topic Current Parameters
+'''
+Input: Spark Structured Streaming der jeweilig ausgewählten Parameter im Frontend
+''' 
+
 userSchema_Parameters = StructType().add("parameter", "string") \
                         .add("alpha", "double") \
                         .add("weight", "double")
@@ -167,30 +173,25 @@ data_current_parameter = data_current_parameter \
 
   
     
+  
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
-
 
 '''
-Transformation & Output: Standardisieren und Enrichment mit EuclideanDistance ausgehend von current Song
+Transformation & Output: Festlegen des jeweiligen Songs aus Dashboard als globale Variable
 '''
 
 #Initialer erster Song
-#current_Song= data_df.id[0]
 current_Song= '11dFghVXANMlKmJXsNCbNl'
 
-def foreach_batch_distance(current_Song_ID, epoch_id):  
+def foreach_batch_song(current_Song_ID, epoch_id):  
     global current_Song
     
     try:
         current_Song= current_Song_ID.select("current_song") \
-                .collect()[0]
-                
-        print("hi")
-                #Verified: Always takes last
-                
+                .collect()[0]                
                 
         current_Song= current_Song[0]
         
@@ -199,14 +200,19 @@ def foreach_batch_distance(current_Song_ID, epoch_id):
         pass
 
 stream_song = data_current_song.writeStream \
-        .foreachBatch(foreach_batch_distance) \
+        .foreachBatch(foreach_batch_song) \
         .start()
+
+
         
-        
-#In Frontend sicherstellen: Erst current_Song und dann current_Parameters senden
-   
+
 
 # --------------------------------------------------------------------------- #
+
+'''
+Transformation & Output: Erzeugen von Recommendations, basierend auf jeweiligen 
+aktuellen Parametern und dem zuletz festgelegten aktuellen Song
+'''
 
 def foreach_batch_distance(current_Parameters, epoch_id):    
     global data_df
@@ -214,24 +220,20 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     global current_Song
     global data
     
-    
+    #Jeweilige Alpha Parameter
     a_list= current_Parameters.select("alpha").collect()
     a_list= [row[0] for row in a_list]
-    
+
+    #Jeweilige Weight Parameter    
     w_list= current_Parameters.select("weight").collect()
     w_list= [row[0] for row in w_list]
     
-    
-    if len(a_list) is not 4 or len(w_list) is not 4:
-        #nur einmalig ausgeführt
-        #hier also stattdessen liste anders befüllen
-        
+    #Initiales Befüllen der Listen, falls keine Lieferung aus Dashboard
+    if len(a_list) is not 4 or len(w_list) is not 4:        
         a_list= [1, 1, 1, 1]
         w_list= [1, 1, 1, 1]
-        
-        
     
-    #Merge new distances
+    #Basierend auf aktuellem Song festlegen der jeweiligen Distanzen aller anderen zu diesem
     distances_left= distances.loc[distances.iloc[:,0]==current_Song]
     distances_left= distances_left.iloc[:,[1, 2]]
     distances_left= distances_left.rename(columns={1: "id", 2: "neo_distance"})
@@ -239,7 +241,6 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     distances_right= distances.loc[distances.iloc[:,1]==current_Song]
     distances_right= distances_right.iloc[:,[0, 2]]
     distances_right= distances_right.rename(columns={0: "id", 2: "neo_distance"})
-
     
     distances_merge= distances_left.append(distances_right)
     distances_merge= distances_merge.drop_duplicates()    
@@ -249,74 +250,66 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data= data.merge(distances_merge, on='id', how='left')
     data['neo_distance']= data.neo_distance.fillna(100)  
     
+    #Überführen in Spark SQL Dataframe
     sqlCtx = SQLContext(sc)
     data = sqlCtx.createDataFrame(data)   
     
-    #Parameter Subset
+    #Subset der relevanten Parameter
     data = data.select(["id", \
                         "name", \
                         "danceability", \
                         "loudness", \
                         "tempo", \
                         "neo_distance"])
-        
-    if data.count() == 0:
-        raise ValueError('Stage 2')
 
     #Enables Parallel Processing on Different Nodes
     #data = sc.parallelize(data)
-        
+
+
+
+
         
     # --------------------------------------------------------------------------- #
     #PREPROCESSING
     # --------------------------------------------------------------------------- #        
     
-    
-    # Transform and write batchDF 
+    #Überführen in eine spark-proprietäre Datenstruktur
     from pyspark.ml.feature import VectorAssembler
     assembler = VectorAssembler() \
                         .setInputCols(["danceability", "loudness", "tempo", "neo_distance"]) \
                         .setOutputCol('features')
                         
     data = assembler.transform(data)
-    
-    if data.count() == 0:
-        raise ValueError('Stage 3')   
 
-    #Normalization
+    #Standardisieren der Verteilungen je Parameter
     from pyspark.ml.feature import MinMaxScaler
     scaler = MinMaxScaler(inputCol="features", 
                           outputCol="scaledFeatures")
     
     scalerModel = scaler.fit(data)
     
-    if data.count() == 0:
-        raise ValueError('Stage 4')
-    
     data = scalerModel.transform(data)
     
     data = data.select(["id", \
                         "name", \
                         "scaledFeatures"])   
-        
 
         
-    if data.count() == 0:
-        raise ValueError('Stage 5')
-        
+
+
         
     # --------------------------------------------------------------------------- #
-    #ENRICH WITH EUCLIDEAN DISTANCE ON STEROIDS
+    #ANREICHERN MIT EUCLIDEAN DISTANCE
     # --------------------------------------------------------------------------- #        
 
     current_song_feature_vector= data \
                             .select("scaledFeatures") \
                             .filter("id = '" + current_Song + "'") \
                             .collect()[0]
+    
                                          
     p_list= list(current_song_feature_vector[0])    
 
-    #raise ValueError('p' + str(p_list) + 'a' + str(a_list) + 'w' +  str(w_list)) 
     def euclDistance(q_list):        
         try:
             distance= math.sqrt(sum( \
@@ -337,15 +330,14 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data = data.select('id') \
             .where("distances > 0") \
             .orderBy('distances', ascending= True) \
-            .limit(1)
-
-            #TODO: ONLY RETURN TOP N         
-            #.head(10) \
-            #TODO: FILTER CURRENT SONG
-            #.filter("id not " + current_Song) \                      
+            .limit(1)                  
+            
+            
+            
+            
             
     # # --------------------------------------------------------------------------- #
-    # #OUTPUT AN FRONTEND MIT KAFKA
+    # OUTPUT AN FRONTEND MIT KAFKA
     # # --------------------------------------------------------------------------- #  
     
     data = data.select(to_json(struct([col(c).alias(c) for c in data.columns])).alias("value"))
@@ -363,15 +355,18 @@ def foreach_batch_distance(current_Parameters, epoch_id):
 stream_param = data_current_parameter.writeStream \
         .foreachBatch(foreach_batch_distance) \
         .start()      
+  
         
+  
         
     
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
+
 '''
-Console Output for Testing
+Testing & Logging: Console Output
 '''
    
 
@@ -381,7 +376,10 @@ consoleOutput = data_current_parameter.writeStream \
       .format("console") \
       .start()
       
-############   
+      
+      
+      
+# --------------------------------------------------------------------------- #
 
 #Current Recommendation
 userSchema_out = StructType().add("value", "string", True) \
@@ -399,15 +397,18 @@ out_test = out_test.writeStream \
       .format("console") \
       .start()   
 
-   
+
+
+
+
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
+
 '''
 Await Termination Statements
-'''     
-      
+'''         
 
 consoleOutput.awaitTermination()
   
@@ -416,5 +417,3 @@ stream_song.awaitTermination()
 stream_param.awaitTermination()
         
 out_test.awaitTermination()
-
-
