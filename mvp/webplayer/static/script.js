@@ -1,9 +1,12 @@
 var isPlaying = false;
 var songPaused = false;
+
 var danceability;
 var loudness;
 var tempo;
 var distance;
+var currentTrackName;
+var currentTrackArtist;
 // Get the hash of the url
 const hash = window.location.hash
 .substring(1)
@@ -43,12 +46,6 @@ var id = '';
 var currentSongId = {"id":"11dFghVXANMlKmJXsNCbNl"};
 var searchResult;
 
-/**var nextSong = new EventSource("/songs");
-
-nextSong.addEventListener("message", function(songid){
-    songid = JSON.parse(songid.data);
-    addToQueue(songid);
-});**/
 // Set up the Web Playback SDK
 
 /** */
@@ -71,21 +68,16 @@ window.onSpotifyPlayerAPIReady = () => {
     // Playback status updates
     player.on('player_state_changed', state => {
         console.log(state) //Standard SDK
-        
-        //TO IMPLEMENT
-        //sendNewTrackToTopic(state.track_window.current_track.id)
 
-        $('#current-track').attr('src', state.track_window.current_track.album.images[0].url); //Update Image
-        $('#current-track-name').text(state.track_window.current_track.name); //Update Trackname
+        //Display album cover in background.
+        $('#songcover').css('background-image', 'url("' + state.track_window.current_track.album.images[0].url + '")')
 
-        var showArtists = '';
-        for(let i = 0; i <= state.track_window.current_track.artists.length-1; i++){
-            showArtists += state.track_window.current_track.artists[i].name;
-            if(i != state.track_window.current_track.artists.length-1){
-                showArtists += ", ";
-            }
-        }
-        $('#artists').text(showArtists);
+        //Display songname and artist in the webplayer.
+        $('#songname').text(state.track_window.current_track.name);
+        $('#artist').text(state.track_window.current_track.artists[0].name);
+
+        //Display artist cover. 
+        displayArtistCover(state.track_window.current_track.artists[0].uri);
     });
 
     // Ready
@@ -101,7 +93,7 @@ window.onSpotifyPlayerAPIReady = () => {
 var slider = document.getElementById("myRange");
 var output = document.getElementById("demo");
 
-
+//Get the selected values from the slider in the UI.
 function get_dashboard_parameter(){
     loudness = Math.abs(parseInt(document.getElementById("Loudness").value));
     danceability = Math.abs(parseInt(document.getElementById("Danceability").value));
@@ -124,11 +116,26 @@ function get_dashboard_parameter(){
     return currentParametersJson;
 }
 
+//Display the artist portrait withing the webplayer.
+function displayArtistCover(artistid){
+    slicedArtistId = artistid.slice(15,37);
+    console.log(slicedArtistId);
+    $.ajax({
+        url:"https://api.spotify.com/v1/artists/" + slicedArtistId,
+        type:"GET",
+        beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+            success: function(data){
+                $('#artistcircle').css('background-image', 'url(' + data.images[0].url + ')');
+            }
+    })
+}
 
+//Save the Users preferences for his next recommended song.
+//Make a POST request to the recommendation engine with the value of the UI Slider Elements.
 function save(){
-    
+
     currentParametersJson = get_dashboard_parameter()
-    /** 
+    /**
     $.ajax({
         crossOrigin: true,
         url: "http://40.119.27.3:6969/parameters/",
@@ -138,7 +145,6 @@ function save(){
             //console.log(msg);
         }
     });
-
     */
 
     getCurrentTrack();
@@ -162,7 +168,7 @@ function save(){
     }
     console.log(data)
     xhr1.send(JSON.stringify(data));
-    
+
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", 'http://40.119.27.3:6969/parameters', true);
@@ -179,22 +185,24 @@ function save(){
     xhr.send(JSON.stringify(currentParametersJson));
 }
 
+//Call this function when the play/pause button is pressed by the User.
+//Determine if the Webplayer should Play, Pause or resume based on isPlaying and songPaused.
 function songHandler(){
     if(isPlaying){
-        pause();
+        pausePlayer();
         isPlaying = false;
         songPaused = true;
     } else if(!isPlaying && !songPaused){
         play();
         isPlaying = true;
     } else {
-        resume();
+        resumePlayer();
         isPlaying = true;
         songPaused = false;
     }
 }
 
-//get Song features for the current track
+//Get Song features for the currently playing track in the Users Playback.
 function getFeatures(){
     $.ajax({
     url:"https://api.spotify.com/v1/audio-features/" + getCurrentTrack().data,
@@ -208,7 +216,7 @@ function getFeatures(){
 
 }
 
-//get the currently playing track
+//Get the currently playing track in the Users Playback.
 function getCurrentTrack (){
     $.ajax({
     url: "https://api.spotify.com/v1/me/player/currently-playing",
@@ -220,7 +228,8 @@ function getCurrentTrack (){
             }
     })
 }
-//Wert der Slider anzeigen
+
+//Show slider Values.
 function show_value1(x){
     document.getElementById("slider_value1").innerHTML=x;
 }
@@ -238,7 +247,8 @@ function show_value4(x) {
 }
 
 
-// Play a track using our new device ID
+//Start the Users Playback.
+//This will always play the same song by default and get recommendations based on this same song.
 function play() {
     var uri = 'spotify:track:11dFghVXANMlKmJXsNCbNl';
     $.ajax({
@@ -246,45 +256,52 @@ function play() {
         type: "PUT",
         data: '{"uris": ["' + uri + '"]}',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
-        success: function(data) { 
+        success: function(data) {
             console.log("play");
         }
     });
 }
 
-function pause() {
+
+//Pause the currently playing Song in the Users Playback.
+function pausePlayer() {
     $.ajax({
         url: 'https://api.spotify.com/v1/me/player/pause?device_id=' + id,
         type: 'PUT',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+ _token );},
         success: function(data) {
-            console.log("pause")
+            console.log("pause");
         }
     });
 }
 
-function resume(){
+//Resume the currently playing Song in the Users Playback. 
+//Note that this function can only be called if a Song in this session was previously paused.
+function resumePlayer(){
     $.ajax({
         url: 'https://api.spotify.com/v1/me/player/play?device_id=' + id,
         type: 'PUT',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
-        success: function(data) { 
-            console.log("resume")
+        success: function(data) {
+            console.log("resume");
         }
     });
 }
 
+//go to the previously played Song
 function previous(){
     $.ajax({
         url: 'https://api.spotify.com/v1/me/player/previous',
         type: 'POST',
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) {
-            console.log("previous")
+            console.log("previous");
+            if(isPlaying == false);
         }
     });
 }
 
+//skip the currently playing Song
 function skip(){
     $.ajax({
         url: 'https://api.spotify.com/v1/me/player/next',
@@ -296,6 +313,8 @@ function skip(){
         });
 }
 
+
+//Adding a new Song to the Users Playback Queue
 function addToQueue(songid){
     var uri = 'spotify:track:' + songid
     $.ajax({
@@ -304,64 +323,38 @@ function addToQueue(songid){
         beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
         success: function(data) {
             console.log("added song with id: " + songid + " to the queue")
+
+            $.ajax({
+                url: 'https://api.spotify.com/v1/tracks/' + songid,
+                type: 'GET',
+                beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+                success: function(data){
+                    console.log('hab info über gequeten song!');
+                    console.log(data);
+                    currentTrackName = data.name;
+                    currentTrackArtist = data.artists[0].name;
+                    displayNewRecommendation();
+                }
+            });
         }
     });
 }
 
-function readJson(){
-    $.getJSON("/static/message.json", function(json){
-        console.log(json);
-        addToQueue(json.id);
-    });
-}
+//Post a notification to display the new recommendation the user just received.
+function displayNewRecommendation(){
+    let message = document.createTextNode('Neue Recommendation erhalten!');
+    let info = document.createTextNode(currentTrackArtist + ' - ' + currentTrackName);
+    var d = document.createElement('div');
+    var innerDiv1 = document.createElement('div');
+    var innerDiv2 = document.createElement('div');
+    d.setAttribute("class", "notification");
+    innerDiv1.appendChild(message);
+    innerDiv2.appendChild(info);
+    d.appendChild(innerDiv1);
+    d.appendChild(innerDiv2);
+    let feed = document.getElementById('notificationcontainer');
+    feed.appendChild(d);
 
-function search(){
-    var searchcontext = $('#searchbox').val();
-    console.log(searchcontext)
-    
-    //const myData = {
-    //    q: searchcontext,
-    //    type: "track"
-    //}
-    
-    /**$.ajax({
-        url: 'https://api.spotify.com/v1/search?q=' + searchcontext + '&type=track',
-        type: 'GET',
-        //data: JSON.stringify(myData),
-        beforeSend: function(xhr){
-            xhr.setRequestHeader('Accept', 'application/json')
-            xhr.setRequestHeader('Content-Type', 'application/json')
-            xhr.setRequestHeader('Authorization', 'Bearer ' + _token)
-        },
-        success: function(data) {
-            console.log(data)
-        }
-    })
-    
-    /**$.get('https://api.spotify.com/v1/search?q=' + searchcontext + '&type=track', { beforeSend: function(xhr){
-        xhr.setRequestHeader('Authorization', 'Bearer ' + _token ); }
-    })**/
-    
-    fetch(
-        'https://cors-anywhere.herokuapp.com/api.spotify.com/v1/search?q=' + searchcontext + '&type=track&market=de',
-        {
-            headers: {
-                Authorization: 'Bearer ' + _token,
-            }
-        }
-    )
-    .then(result => result.json()).then(result => 
-        displayResults(result)
-    )
-    
-}
-
-//hier schleifendurchläufe an ergebnisse anpassen. beim api call evtl ergebnisse limitieren.
-function displayResults(result){
-    var span = '#search-res-'
-    for(j = 0; j <= result.tracks.items.length-1; j++) {
-        $(span.concat(j)).text(result.tracks.items[j].name + ' - ' + result.tracks.items[j].artists[0].name);
-    }
 }
 
 function changeIcon(){
@@ -369,10 +362,7 @@ function changeIcon(){
     $(".playpause").toggleClass("fa-play-circle")
 }
 
-
-
-
-//TO DO IMPLEMENT NEW RECOMENDATION
+//New recommendations from recommendation engine.
 
 var source = new EventSource("http://40.119.27.3:6969/recomendations");
 
@@ -381,7 +371,7 @@ source.addEventListener("message", function (e) {
     addToQueue(message["id"]);
 });
 
-
+//Sending the currently playing track to the recommendation engine.
 function sendNewTrackToTopic(songid){
 
     currentParametersJson = get_dashboard_parameter()
