@@ -1,47 +1,180 @@
 @import url('https://fonts.googleapis.com/css?family=Butterfly+Kids%7CRoboto%27');
 
+#header {
+    text-align: center;
+    font-size: 32pt;
+}
+
 #contents {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-around;
+    flex-wrap: nowrap;
+    justify-content: center;
     align-items: stretch;
     width: 100%;
     margin-top: 10vh;
 }
 
-#header {
-    text-align: center;
+#notifications, #webplayer, #parameter {
+    margin: 0 20px;
 }
 
-#footer {
-    text-align: center;
-    align-content: center;
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
+#notificationcontainer{
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse;
+    padding: 0 20px;
 }
 
-#search {
-    flex-basis: 30%;
-    position: flex;
+#notificationwrapper{
+    display: block;
+    position: absolute;
+    overflow-y: auto;
+    width: calc(100% - 20px);
+    margin-top: 50px;
+    height: calc(100% - 70px);
+}
+
+#notifications{
+    flex-basis: 20%;
+    display: flex;
     align-items: stretch;
+    border-radius: 15px;
+    padding-left: 10px;
+    padding-right: 10px;
+    height: 500px;
+    background-color: grey;
+    position: relative;
 }
 
-#parameter {
+.notification{
+    background-color: rgba(0,0,0,0.5);
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+    margin-right: 1vh;
+    padding: 1vh;
+    line-height: 30px;
     text-align: center;
-    float: right;
-    flex-basis: 30%;
-    position: flex;
-    align-items: stretch;
+    border: 1px solid rgba(0,0,0,0.5);
+    border-radius: 15px;
+}
+
+::-webkit-scrollbar {
+    width: 20px;
+}
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    background-color: lightgrey;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    background-color: white;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: #696969;
 }
 
 #webplayer {
     text-align: center;
-    flex-basis: %;
-    position: flex;
+    flex-basis: 40%;
+    display: flex;
     align-items: stretch;
+    border: 0.5px lightgrey;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#songcovercontainer{
+    height: 70%;
+    overflow: hidden;
+}
+
+#songcover{
+    background-size: cover;
+    background-image: url('cover.png');
+    background-position: center;
+    -webkit-filter: blur(8px);
+    filter: blur(8px);
+    width: 115%;
+    height: 115%;
+    margin: -15px 10px 10px -15px;
+}
+
+#descriptioncontainer{
+    width: 100%;
+    height: 50%;
+    position: relative;
+    top: -100%;
+    margin-top: 5%;
+}
+
+#artistcover {
+    width: 35%;
+    height: 100%;
+    float: left;
+}
+
+#artistcircle {
+    height: 150px;
+    width: 150px;
+    border-radius: 100%;
+    background-image: url('cover.png');
+    background-size: cover;
+    margin-left: 12px;
+    margin: auto;
+}
+
+#nowplaying {
+    width: 65%;
+    height: 100%;
+    float: right;
+    position: relative;
+}
+
+#infos {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 30%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+#songname {
+    float: left;
+    font-size: 22pt;
+    color: white;
+    text-shadow: 1px 1px #1c1c1c;
+    text-align: left;
+}
+
+#artist {
+    float: left;
+    font-size: 22pt;
+    color: white;
+    text-shadow: 1px 1px #1c1c1c;
+    text-align: left;
+}
+
+#controls {
+    height: 30%;
+    background-color: grey;
+}
+
+#songbuttons {
+    display: inline-grid;
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    padding-top: 5vh;
 }
 
 .songnavigation {
@@ -57,19 +190,20 @@
 
 .playpause:hover {
     color: white;
-    font-size: 49pt;
+    font-size: 50pt;
 }
 
 #playbox{
     width:80px;
     height:80px;
-    line-height:80px;
+    line-height: 80px;
     text-align:center;
     vertical-align:middle;
     display:inline-block;
+
 }
 
-.fa-play-circle { 
+.fa-play-circle {
     line-height: inherit;
 }
 
@@ -89,12 +223,14 @@
     color: white;
 }
 
-#songbuttons {
-    display: inline-grid;
-    grid-auto-flow: column;
-    align-items: center;
-    justify-content: center;
-    vertical-align: middle;
+#parameter {
+    text-align: center;
+    float: right;
+    flex-basis: 20%;
+    display: flex;
+    align-items: stretch;
+    border-radius: 15px;
+    background-color: grey;
 }
 
 body {
@@ -105,15 +241,15 @@ body {
 
 
 #slidecontainer {
-  width: 100%; /* Width of the outside container */
+  width: 100%;
 }
 
 .slider {
   -webkit-appearance: none;
-  width: 100%;
+  width: 70%;
   height: 15px;
   border-radius: 5px;
-  background: #d3d3d3;
+  background: #696969;
   outline: none;
   opacity: 0.7;
   -webkit-transition: .2s;
@@ -126,7 +262,7 @@ body {
   width: 25px;
   height: 25px;
   border-radius: 50%;
-  background: #4CAF50;
+  background: #0C5504;
   cursor: pointer;
 }
 
@@ -169,13 +305,16 @@ content: '';
 	border-bottom-color: rgba(255,255,255,0.5);
 	transform: scale(0.1, 1);
 }
+
 .button:hover span {
 	letter-spacing: 2px;
 }
+
 .button:hover::before {
 	opacity: 1;
 	transform: scale(1, 1);
 }
+
 .button::after {
 	content: '';
 	position: absolute;
@@ -187,14 +326,23 @@ content: '';
 	transition: all 0.3s;
 	background-color: rgba(255,255,255,0.1);
 }
+
 .button:hover::after {
 	opacity: 0;
 	transform: scale(0.1, 1);
 }
 
 .logo{
- float: center;
-  width: 170px;
-  height: 170px;
- }
+    float: center;
+    width: 170px;
+    height: 170px;
+}
 
+#footer {
+    text-align: center;
+    align-content: center;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}

@@ -6,6 +6,7 @@ Created on Mon Jun 22 14:51:50 2020
 @author: davidrundel
 """
 
+#try
 
 '''
 Import verwendeter Bibliotheken -
@@ -177,15 +178,19 @@ Transformation & Output: Standardisieren und Enrichment mit EuclideanDistance au
 '''
 
 #Initialer erster Song
-current_Song= data_df.id[0]
+#current_Song= data_df.id[0]
+current_Song= '11dFghVXANMlKmJXsNCbNl'
 
 def foreach_batch_distance(current_Song_ID, epoch_id):  
     global current_Song
     
     try:
-        current_Song= current_Song_ID \
+        current_Song= current_Song_ID.select("current_song") \
                 .collect()[0]
+                
+        print("hi")
                 #Verified: Always takes last
+                
                 
         current_Song= current_Song[0]
         
@@ -330,7 +335,9 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     data = data.withColumn('distances', euclDistanceUDF('scaledFeatures'))
     
     data = data.select('id') \
-            .orderBy('distances', ascending= True)
+            .where("distances > 0") \
+            .orderBy('distances', ascending= True) \
+            .limit(1)
 
             #TODO: ONLY RETURN TOP N         
             #.head(10) \
@@ -340,9 +347,10 @@ def foreach_batch_distance(current_Parameters, epoch_id):
     # # --------------------------------------------------------------------------- #
     # #OUTPUT AN FRONTEND MIT KAFKA
     # # --------------------------------------------------------------------------- #  
+    
+    data = data.select(to_json(struct([col(c).alias(c) for c in data.columns])).alias("value"))
 
-    data.selectExpr("id as value") \
-        .selectExpr("CAST(value AS STRING)") \
+    data.selectExpr("CAST(value AS STRING)") \
         .write \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:9092") \

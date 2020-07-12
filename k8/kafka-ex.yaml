@@ -6,17 +6,17 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: webplayer
-  name: webplayer
+    io.kompose.service: kafka
+  name: kafka-ex
 spec:
   type: LoadBalancer  
   ports:
   - protocol: TCP
-    port: 6969
-    targetPort: 6969
+    port: 9092
+    targetPort: 9093
     name: http       
   selector:
-    io.kompose.service: webplayer
+    io.kompose.service: kafka
 
 status:
   loadBalancer: {}

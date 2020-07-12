@@ -34,7 +34,7 @@ SEED GENRES
 """
 
 recommendations_seach_settings = {
-    "limit":100,
+    "limit":99,
     "seed_genres": "pop"
 }
 
@@ -42,8 +42,14 @@ response_recomendations = json.loads(auth.get(
     "https://api.spotify.com/v1/recommendations", params=recommendations_seach_settings).content)
 
 
+songid=""
+all_recomendations = response_recomendations["tracks"]
+specific = json.loads(auth.get("https://api.spotify.com/v1/tracks/11dFghVXANMlKmJXsNCbNl").content)
+all_recomendations.append(specific)
+
+
 tracks = {}
-for recoomandation in response_recomendations["tracks"]:
+for recoomandation in all_recomendations:
 
     tracks[recoomandation["id"]] = {
         "name": recoomandation["name"],
