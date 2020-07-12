@@ -1,1 +1,6 @@
-Spark Recommendation Engine ReadMe
+Big Data Projekt - Spotify
+
+# Spark Recommendation Engine
+
+Beschreibung
+
