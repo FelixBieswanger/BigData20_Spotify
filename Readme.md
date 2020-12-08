@@ -2,7 +2,7 @@
 
 ## Sommersemester 2020
 
-In diesem Projekt wurde eine Realtime Spotify Recommendation Engine implementiert. Die Neuheit dabei ist, dass der Nutzer die Recomendation beeinflussen kann. Dafür kann der Nutzer im Dashboard Parameter wie zum Beispiel Loudness oder Daniceness anpassen. Anschließend wird basierend auf derzeit spielenden Song sowie der eingestellten Parameter ein neuer Song berechnet und automatisch zur Warteschlange hinzugefügt.
+In diesem Projekt wurde eine Realtime Spotify Recommendation Engine implementiert. Die Neuheit dabei ist, dass der Nutzer die Recomendation beeinflussen kann. Dafür kann der Nutzer im Dashboard Parameter wie zum Beispiel Loudness oder Daniceness anpassen. Anschließend wird basierend auf dem derzeit spielenden Song sowie der eingestellten Parameter ein neuer Song berechnet und automatisch zur Warteschlange hinzugefügt.
 
 # Architekturbild:
 ![alt text](https://github.com/FelixBieswanger/BigData20_Spotify/blob/master/architekture.png?raw=true)
